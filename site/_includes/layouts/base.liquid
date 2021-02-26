@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang={{ metadata.lang }}>
+  <head>
+    <link href="/assets/styles/index.css" rel="stylesheet"/>
+
+    <meta charset="utf-8" />
+    <title>{{title | default: metadata.title}}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="{{ metadata.description }}" />
+    <meta name="keywords" content="{{ metadata.keywords }}" />
+  </head>
+
+  <body class="min-h-screen bg-black max-w-5xl mx-auto px-6 py-16">
+    <nav class="flex justify-between mb-20 text-2xl">
+      <a href="/">Radio Universe</a>
+      <a class="underline" href="/all">All transmissions</a>
+    </nav>
+
+    <main>
+      {{ content | safe }}
+    </main>
+
+    <script type="module" src="/assets/scripts/index.js"></script>
+  </body>
+</html>

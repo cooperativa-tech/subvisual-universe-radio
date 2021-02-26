@@ -1,0 +1,24 @@
+backend:
+  name: github
+  repo: cooperativa-tech/subvisual-universe-radio
+  squash_merges: true
+publish_mode: editorial_workflow
+media_folder: "static/images"
+public_folder: "/images"
+collections:
+  - name: "blog"
+    label: "Transmissions"
+    folder: "site/_data/transmissions"
+    extension: "json"
+    create: true
+    slug: "{{date}}"
+    summary: "{{date}} - {{title}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Date", name: "date", widget: "date", format: "YYYY-MM-DD" }
+      - label: "Playlists"
+        name: "playlists"
+        widget: "list"
+        fields:
+          - { label: "Author", name: "author", widget: "string" }
+          - { label: "Spotify ID", name: "spotifyId", widget: "string" }

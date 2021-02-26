@@ -1,0 +1,32 @@
+<div class="flex space-x-4">
+  <!--
+       The pagination seems inverted in order to "simulate" the desired chronological order
+       from the most recent to oldest transmission, while keeping the latest as the homepage
+  -->
+{% if pagination.href.next %}<a href="{{ pagination.href.next }}">< Previous</a>{% endif %}
+{% if pagination.href.previous %}<a href="{{ pagination.href.previous }}">Next ></a>{% endif %}
+</div>
+
+<h1 class="text-2xl mb-14 mt-8">
+  {{ transmission.title }} - {{ transmission.date | formatDate }}
+</h1>
+
+<ul class="grid grid-cols-3 lg:grid-cols-2 md:grid-cols-2 sm:grid-cols-1 sm:justify-items-center gap-10">
+  {% for playlist in transmission.playlists %}
+    <li>
+      <h3 class="text-xl mb-8 whitespace-nowrap overflow-ellipsis overflow-hidden">
+        {{ playlist.author }}
+      </h3>
+
+      <iframe
+        src="https://open.spotify.com/embed/playlist/{{ playlist.spotifyId }}"
+        width="100%"
+        height="380"
+        frameborder="0"
+        allowtransparency="true"
+        allow="encrypted-media"
+        loading="lazy"
+      ></iframe>
+    </li>
+  {% endfor %}
+</ul>

@@ -1,0 +1,10 @@
+---
+layout: layouts/base.liquid
+pagination:
+  data: transmissions
+  size: 1
+  alias: transmission
+permalink: "/{% if pagination.pageNumber > 0 %}{{ transmission.id | slug }}/{% endif %}"
+---
+
+{% include components/transmission, transmission: transmission %}

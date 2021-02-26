@@ -1,0 +1,28 @@
+{
+  "browserslist": "ie 11",
+  "scripts": {
+    "dev": "NODE_ENV=development snowpack dev",
+    "optimize-fonts": "subfont $(find build -name '*.html') --in-place --no-fallbacks --inline-fonts --inline-css --font-display block",
+    "build": "NODE_ENV=production snowpack build && yarn optimize-fonts",
+    "format": "prettier --write \"**/*.js\" *.js \"**/*.css\"",
+    "lint": "prettier --check \"**/*.js\" *.js \"**/*.css\""
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@11ty/eleventy": "^0.11.0",
+    "@snowpack/plugin-postcss": "^1.1.0",
+    "@snowpack/plugin-run-script": "^2.3.0",
+    "@snowpack/plugin-webpack": "^2.3.0",
+    "autoprefixer": "^10.2.4",
+    "cssnano": "^4.1.10",
+    "eleventy-plugin-lazyimages": "^2.1.0",
+    "glob": "^7.1.6",
+    "postcss": "^8.2.6",
+    "postcss-cli": "^8.3.1",
+    "postcss-import": "^14.0.0",
+    "prettier": "^2.2.1",
+    "snowpack": "^3.0.13",
+    "subfont": "^5.3.0",
+    "tailwindcss": "^2.0.3"
+  }
+}
