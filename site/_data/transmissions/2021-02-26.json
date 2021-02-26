@@ -1,0 +1,42 @@
+{
+  "date": "2021-02-26T00:00:00",
+  "title": "Non english/tuga music",
+  "playlists": [
+    {
+      "author": "Zé",
+      "spotifyId": "6w0iwIS1iP2IygPYfgeLO4"
+    },
+    {
+      "author": "Justo",
+      "spotifyId": "3j44BmqXizIgHcyDv0dbkg"
+    },
+    {
+      "author": "Xico",
+      "spotifyId": "671MZbwm3GEBf5LKDYK6Ue"
+    },
+    {
+      "author": "Eduardo",
+      "spotifyId": "6eBVbCpd1rqnIR9DxRcVkB"
+    },
+    {
+      "author": "Álvaro",
+      "spotifyId": "7FzbyHZfF4uQGUpTg7XtQa"
+    },
+    {
+      "author": "Mendes",
+      "spotifyId": "5G769NPhok0FFhPqEv9Zko"
+    },
+    {
+      "author": "Davide",
+      "spotifyId": "4eeerXC6KohHxciymIllby"
+    },
+    {
+      "author": "Júlia",
+      "spotifyId": "6dcee3GUMsFiyeyePeb44L"
+    },
+    {
+      "author": "Rodrigues",
+      "spotifyId": "5FSzEnrxxE1xJF9weND1OM"
+    }
+  ]
+}
