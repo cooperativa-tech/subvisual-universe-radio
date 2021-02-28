@@ -4,7 +4,7 @@ pagination:
   data: transmissions
   size: 1
   alias: transmission
-permalink: "/{% if pagination.pageNumber > 0 %}{{ transmission.id | slug }}/{% endif %}"
+permalink: "/{{ transmission.id | slug }}/"
 ---
 
 {% include components/transmission, transmission: transmission %}

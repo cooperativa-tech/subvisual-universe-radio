@@ -1,7 +1,7 @@
 {
   "browserslist": "ie 11",
   "scripts": {
-    "dev": "NODE_ENV=development snowpack dev",
+    "dev": "NODE_ENV=development snowpack dev --polyfill-node",
     "optimize-fonts": "subfont $(find build -name '*.html') --in-place --no-fallbacks --inline-fonts --inline-css --font-display block",
     "build": "NODE_ENV=production snowpack build && yarn optimize-fonts",
     "format": "prettier --write \"**/*.js\" *.js \"**/*.css\"",

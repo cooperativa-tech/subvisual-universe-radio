@@ -3,13 +3,7 @@ layout: layouts/base.liquid
 ---
 
 <ul>
-  <li>
-    <a class="block text-xl" href="/">
-      - <span class="underline">{{ transmissions[0].title }}</span> - <span class="text-lg">{{ transmissions[0].date | formatDate }}</span>
-    </a>
-  </li>
-  {% assign transmissionsWithoutFirst = transmissions | slice: 1 %}
-  {% for transmission in transmissionsWithoutFirst %}
+  {% for transmission in transmissions %}
     <li>
       <a class="block text-xl" href="/{{transmission.id | slug}}/">
         - <span class="underline">{{ transmission.title }}</span> - <span class="text-lg">{{ transmission.date | formatDate }}</span>
