@@ -7,7 +7,11 @@
     "format": "prettier --write \"**/*.js\" *.js \"**/*.css\"",
     "lint": "prettier --check \"**/*.js\" *.js \"**/*.css\""
   },
-  "dependencies": {},
+  "dependencies": {
+    "icecast-metadata-player": "^0.3.0",
+    "mopidy": "^1.2.1",
+    "react-audio-spectrum": "^0.1.0"
+  },
   "devDependencies": {
     "@11ty/eleventy": "^0.11.0",
     "@snowpack/plugin-postcss": "^1.1.0",

@@ -9,22 +9,4 @@ layout: layouts/base.liquid
   controls="controls"
   preload="none"
   autoplay="true"
->
-  <source
-    src="http://94.61.227.207:8000/radiouniverso"
-    type="application/ogg"
-  />
-</audio>
-
-<script>
-  const getSongTitle = async () => {
-    const response = await fetch("http://94.61.227.207:8000/status-json.xsl");
-    const json = await response.json();
-
-    document.getElementById("currentSong").innerText =
-      json.icestats.source.title;
-  };
-
-  getSongTitle();
-  setInterval(getSongTitle, 5000);
-</script>
+/>

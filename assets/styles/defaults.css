@@ -34,3 +34,25 @@ html {
     @apply text-lg;
   }
 }
+
+canvas {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+nav {
+  position: relative;
+
+  z-index: 1;
+}
+
+main {
+  position: relative;
+
+  z-index: 1;
+}
