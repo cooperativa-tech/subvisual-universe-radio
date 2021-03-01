@@ -1,14 +1,17 @@
 ---
 layout: layouts/base.liquid
 ---
-<h1 class="mb-4 text-lg">Now playing:</h1>
+<h1 class="mb-4 text-lg">Now streaming:</h1>
 
 <div class="flex justify-start items-center sm:flex-col sm:items-start">
   <button id="pause" class="w-0">
-    <img width="35px" height="35px" class="" src="/images/pause.svg"></img>
+    <img width="35px" height="35px" src="/images/pause.svg"></img>
   </button>
-  <button id="play">
-    <img width="35px" height="35px" class="" src="/images/play.svg"></img>
+  <button id="play" class="w-0">
+    <img width="35px" height="35px" src="/images/play.svg"></img>
+  </button>
+  <button id="loading">
+    <img width="35px" height="35px" class="animate-spin duration-1400" src="/images/loading.svg"></img>
   </button>
   <h2 class="ml-8 mb-1" id="currentSong">&nbsp;</h2>
   <span class="sm:invisible">&nbsp; - &nbsp;</span>

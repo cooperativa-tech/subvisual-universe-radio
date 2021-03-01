@@ -109,6 +109,7 @@ const start = () => {
   let animation;
   let audioElement = createAudioElement();
 
+  const spinner = document.getElementById("loading");
   const playButton = document.getElementById("play");
   const pauseButton = document.getElementById("pause");
 
@@ -168,8 +169,32 @@ const start = () => {
     } else {
       await player.play();
     }
-    playButton.classList.add("w-0");
-    pauseButton.classList.remove("w-0");
+  };
+
+  const updatePlayerButtons = () => {
+    requestAnimationFrame(updatePlayerButtons);
+
+    if (!player) {
+      spinner.classList.add("w-0");
+      playButton.classList.remove("w-0");
+      pauseButton.classList.add("w-0");
+    } else if (
+      player.state === "loading" ||
+      player.state === "retrying" ||
+      player.state === "stopping"
+    ) {
+      playButton.classList.add("w-0");
+      pauseButton.classList.add("w-0");
+      spinner.classList.remove("w-0");
+    } else if (player.state === "playing") {
+      spinner.classList.add("w-0");
+      playButton.classList.add("w-0");
+      pauseButton.classList.remove("w-0");
+    } else {
+      spinner.classList.add("w-0");
+      playButton.classList.remove("w-0");
+      pauseButton.classList.add("w-0");
+    }
   };
 
   audioElement.addEventListener("pause", pause);
@@ -178,7 +203,9 @@ const start = () => {
   playButton.addEventListener("click", play);
   pauseButton.addEventListener("click", pause);
   window.addEventListener("resize", resize);
+
   play();
+  requestAnimationFrame(updatePlayerButtons);
 };
 
 window.addEventListener("load", start);
