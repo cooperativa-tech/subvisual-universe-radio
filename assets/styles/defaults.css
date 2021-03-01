@@ -35,6 +35,10 @@ html {
   }
 }
 
+audio {
+  display: none;
+}
+
 canvas {
   position: absolute;
   top: 50%;

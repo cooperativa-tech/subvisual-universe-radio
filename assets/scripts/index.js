@@ -1,13 +1,18 @@
-// import * as Mopidy from "mopidy";
 import IcecastMetadataPlayer from "icecast-metadata-player";
-
-const WIDTH = 1000;
-const HEIGHT = 200;
 
 const RADIO_URL = "http://94.61.227.207:8000/radiouniverso";
 
 const onMetadata = (metadata) => {
   console.log("metadata", metadata);
+};
+
+const createCanvas = () => {
+  const canvas = document.getElementById("canvas");
+
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  return canvas;
 };
 
 const createMediaPlayer = () => {
@@ -20,51 +25,115 @@ const createMediaPlayer = () => {
   });
 };
 
-const start = () => {
-  const canvas = document.getElementById("canvas");
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+const createAudioElement = () => {
   const [audioElement, ...rest] = document.getElementsByTagName("audio");
-  let player = null;
-  const canvasCtx = canvas.getContext("2d");
+
+  return audioElement;
+};
+
+const createAnalyser = () => {
   let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   let analyser = audioCtx.createAnalyser();
-  analyser.fftSize = 4096;
+  analyser.fftSize = 2048;
+  analyser.smoothingTimeConstant = 0.95;
+  console.log(analyser);
+
+  return { analyser, audioCtx };
+};
+
+const createAnalyserAnimation = (player) => {
   let animation;
+  const canvas = createCanvas();
+  const canvasCtx = canvas.getContext("2d");
+  const { analyser, audioCtx } = createAnalyser();
+
+  const length = analyser.frequencyBinCount;
+  let timeArray = new Uint8Array(length);
+  let freqArray = new Uint8Array(length);
+
+  let source = audioCtx.createMediaElementSource(player.audioElement);
+  source.connect(analyser);
+  source.connect(audioCtx.destination);
 
   const draw = () => {
-    let bufferLength = analyser.frequencyBinCount;
-    let dataArray = new Uint8Array(bufferLength);
-
-    analyser.getByteTimeDomainData(dataArray);
+    animation = requestAnimationFrame(draw);
+    analyser.getByteTimeDomainData(timeArray);
+    analyser.getByteFrequencyData(freqArray);
 
     canvasCtx.fillStyle = "rgb(0, 0, 0)";
     canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+    canvasCtx.fillStyle = "rgb(255, 255, 255)";
+
     canvasCtx.lineWidth = 2;
     canvasCtx.strokeStyle = "rgb(255, 255, 255)";
     canvasCtx.beginPath();
 
-    let sliceWidth =
-      (canvas.width * window.devicePixelRatio * 2) / bufferLength;
+    let sliceWidth = canvas.width / length;
+    let barWidth = canvas.width / length;
     let x = 0;
 
-    for (let i = 0; i < bufferLength; i++) {
-      const v = dataArray[i] / 128.0;
-      const y = (v * canvas.height) / 4 + canvas.height / 4;
+    // for (let i = 0; i < length; i++) {
+    //   const v = timeArray[i] / 128.0;
+    //   const y = v * (canvas.height / 2);
+    //
+    //   i === 0 ? canvasCtx.moveTo(x, y) : canvasCtx.lineTo(x, y);
+    //   x += sliceWidth;
+    // }
+    //
+    // canvasCtx.lineTo(canvas.width, canvas.height / 2);
+    // canvasCtx.stroke();
 
-      i === 0 ? canvasCtx.moveTo(x, y) : canvasCtx.lineTo(x, y);
-      x += sliceWidth;
+    x = 0;
+    for (let i = 0; i < length; i++) {
+      let progress = i / length;
+      let barHeight = freqArray[i] / 2;
+      canvasCtx.fillStyle = `rgb(255, 255, 255)`;
+      canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+      x += barWidth + 1;
     }
+  };
 
-    canvasCtx.lineTo(canvas.width, canvas.height / 2);
-    canvasCtx.stroke();
-
+  const start = () => {
     animation = requestAnimationFrame(draw);
   };
 
+  const stop = () => {
+    cancelAnimationFrame(animation);
+  };
+
+  return { start, stop };
+};
+
+const start = () => {
+  let player;
+  let animation;
+  let audioElement = createAudioElement();
+
+  const playButton = document.getElementById("play");
+  const pauseButton = document.getElementById("pause");
+
+  const mopidy = new Mopidy({
+    autoConnect: true,
+    webSocketUrl: "ws://94.61.227.207:6680/mopidy/ws/",
+  });
+
+  mopidy.on("event", (data, props) => {
+    console.log(data, props);
+  });
+
+  mopidy.on("state:online", async () => {
+    const track = await mopidy.playback.getCurrentTrack();
+    const currentSong = document.getElementById("currentSong");
+    const currentartist = document.getElementById("currentArtist");
+    const artists = track.artists.reduce(
+      (acc, { name }) => (acc.length ? `${acc}, ${name}` : name),
+      "",
+    );
+    currentSong.textContent = `${track.name}`;
+    currentArtist.textContent = `${artists}`;
+  });
+
   const resize = () => {
-    console.log(window.innerWidth);
-    console.log(window.innerHeight);
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
   };
@@ -74,33 +143,40 @@ const start = () => {
 
     player.detachAudioElement();
     player = null;
-    if (animation) cancelAnimationFrame(animation);
+    playButton.classList.remove("w-0");
+    pauseButton.classList.add("w-0");
+    if (animation) animation.stop();
   };
 
   const onPlay = async () => {
-    let source = audioCtx.createMediaElementSource(player.audioElement);
-    source.connect(analyser);
-    source.connect(audioCtx.destination);
+    if (!animation) {
+      animation = createAnalyserAnimation(player);
+      animation.start();
+    }
 
-    if (animation) cancelAnimationFrame(animation);
-
-    animation = requestAnimationFrame(draw);
+    if (animation) animation.start();
   };
 
   const play = async () => {
     if (!player) {
       player = await createMediaPlayer();
-      player.audioElement.addEventListener("playing", onPlay);
       await player.play();
+      console.log("here");
     } else if (player.state === "playing") {
+      console.log("hu-hu");
       return;
     } else {
       await player.play();
     }
+    playButton.classList.add("w-0");
+    pauseButton.classList.remove("w-0");
   };
 
   audioElement.addEventListener("pause", pause);
   audioElement.addEventListener("play", play);
+  audioElement.addEventListener("playing", onPlay);
+  playButton.addEventListener("click", play);
+  pauseButton.addEventListener("click", pause);
   window.addEventListener("resize", resize);
   play();
 };

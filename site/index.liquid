@@ -1,12 +1,28 @@
 ---
 layout: layouts/base.liquid
 ---
+<h1 class="mb-4 text-lg">Now playing:</h1>
 
-<p id="currentSong">&nbsp;</p>
+<div class="flex justify-start items-center sm:flex-col sm:items-start">
+  <button id="pause" class="w-0">
+    <img width="35px" height="35px" class="" src="/images/pause.svg"></img>
+  </button>
+  <button id="play">
+    <img width="35px" height="35px" class="" src="/images/play.svg"></img>
+  </button>
+  <h2 class="ml-8 mb-1" id="currentSong">&nbsp;</h2>
+  <span class="sm:invisible">&nbsp; - &nbsp;</span>
+  <p id="currentArtist">&nbsp;</p>
+</div>
 
 <audio
   xmlns="http://www.w3.org/1999/xhtml"
   controls="controls"
   preload="none"
   autoplay="true"
-/>
+>
+  <source
+    src="http://94.61.227.207:8000/radiouniverso"
+    type="audio/webm"
+  />
+</audio>
