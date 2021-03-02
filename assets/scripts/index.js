@@ -67,6 +67,15 @@ const createAnalyserAnimation = (player) => {
     let barWidth = canvas.width / length;
     let x = 0;
 
+    // const grd = canvasCtx.createLinearGradient(
+    //   0,
+    //   canvas.height - 120,
+    //   0,
+    //   canvas.height,
+    // );
+    // grd.addColorStop(1, "white");
+    // grd.addColorStop(0, "red");
+
     // for (let i = 0; i < length; i++) {
     //   const v = timeArray[i] / 128.0;
     //   const y = v * (canvas.height / 2);
@@ -82,13 +91,11 @@ const createAnalyserAnimation = (player) => {
     for (let i = 0; i < length; i++) {
       let progress = i / length;
       let barHeight = freqArray[i] / 2;
-      canvasCtx.fillStyle = `rgb(255, 255, 255)`;
-      canvasCtx.fillRect(
-        x - 1,
-        canvas.height - barHeight,
-        barWidth + 2,
-        barHeight,
-      );
+
+      canvasCtx.fillStyle = "white";
+      canvasCtx.fillRect(x, canvas.height - barHeight, barWidth + 2, barHeight);
+      canvasCtx.fillStyle = "red";
+      canvasCtx.fillRect(x, canvas.height - barHeight - 4, barWidth, 2);
       x += barWidth + 1;
     }
   };
@@ -135,8 +142,7 @@ const start = () => {
   };
 
   mopidy.on("event", (type, { tl_track }) => {
-    console.log(type);
-    if (tl_track) {
+    if (type === "event:trackPlaybackStarted" && tl_track) {
       track = tl_track.track;
       updateDomTrackMeta();
     }
@@ -199,7 +205,7 @@ const start = () => {
   pauseButton.addEventListener("click", pause);
   window.addEventListener("resize", resize);
 
-  // play();
+  play();
   requestAnimationFrame(updatePlayerButtons);
 };
 
