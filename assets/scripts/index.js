@@ -1,10 +1,6 @@
-import IcecastMetadataPlayer from "icecast-metadata-player";
+const RADIO_URL = "http://radiouniverso.live/radiouniverso";
 
-const RADIO_URL = "http://94.61.227.207:8000/radiouniverso";
-
-const onMetadata = (metadata) => {
-  console.log("metadata", metadata);
-};
+const onMetadata = (metadata) => {};
 
 const createCanvas = () => {
   const canvas = document.getElementById("canvas");
@@ -15,14 +11,14 @@ const createCanvas = () => {
   return canvas;
 };
 
-const createMediaPlayer = () => {
-  const [audioElement, ...rest] = document.getElementsByTagName("audio");
-
-  return new IcecastMetadataPlayer(RADIO_URL, {
+const createMediaPlayer = (audioElement) => {
+  const player = new window.IcecastMetadataPlayer(RADIO_URL, {
     onMetadata,
     audioElement,
-    metadataTypes: ["icy", "ogg"],
+    metadataTypes: [],
   });
+
+  return player;
 };
 
 const createAudioElement = () => {
@@ -36,7 +32,6 @@ const createAnalyser = () => {
   let analyser = audioCtx.createAnalyser();
   analyser.fftSize = 2048;
   analyser.smoothingTimeConstant = 0.95;
-  console.log(analyser);
 
   return { analyser, audioCtx };
 };
@@ -64,7 +59,7 @@ const createAnalyserAnimation = (player) => {
     canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
     canvasCtx.fillStyle = "rgb(255, 255, 255)";
 
-    canvasCtx.lineWidth = 2;
+    canvasCtx.lineWidth = 1;
     canvasCtx.strokeStyle = "rgb(255, 255, 255)";
     canvasCtx.beginPath();
 
@@ -88,7 +83,12 @@ const createAnalyserAnimation = (player) => {
       let progress = i / length;
       let barHeight = freqArray[i] / 2;
       canvasCtx.fillStyle = `rgb(255, 255, 255)`;
-      canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+      canvasCtx.fillRect(
+        x - 1,
+        canvas.height - barHeight,
+        barWidth + 2,
+        barHeight,
+      );
       x += barWidth + 1;
     }
   };
@@ -105,33 +105,46 @@ const createAnalyserAnimation = (player) => {
 };
 
 const start = () => {
-  let player;
-  let animation;
   let audioElement = createAudioElement();
+  let player = {};
+  let animation = null;
 
   const spinner = document.getElementById("loading");
   const playButton = document.getElementById("play");
   const pauseButton = document.getElementById("pause");
+
+  let track = {};
+  let artists = "";
 
   const mopidy = new Mopidy({
     autoConnect: true,
     webSocketUrl: "ws://94.61.227.207:6680/mopidy/ws/",
   });
 
-  mopidy.on("event", (data, props) => {
-    console.log(data, props);
-  });
-
-  mopidy.on("state:online", async () => {
-    const track = await mopidy.playback.getCurrentTrack();
+  const updateDomTrackMeta = () => {
     const currentSong = document.getElementById("currentSong");
     const currentartist = document.getElementById("currentArtist");
-    const artists = track.artists.reduce(
+
+    artists = track.artists.reduce(
       (acc, { name }) => (acc.length ? `${acc}, ${name}` : name),
       "",
     );
+
     currentSong.textContent = `${track.name}`;
     currentArtist.textContent = `${artists}`;
+  };
+
+  mopidy.on("event", (type, { tl_track }) => {
+    console.log(type);
+    if (tl_track) {
+      track = tl_track.track;
+      updateDomTrackMeta();
+    }
+  });
+
+  mopidy.on("state:online", async () => {
+    track = await mopidy.playback.getCurrentTrack();
+    updateDomTrackMeta();
   });
 
   const resize = () => {
@@ -141,44 +154,28 @@ const start = () => {
 
   const pause = async () => {
     if (player) await player.stop();
-
-    player.detachAudioElement();
-    player = null;
-    playButton.classList.remove("w-0");
-    pauseButton.classList.add("w-0");
-    if (animation) animation.stop();
-  };
-
-  const onPlay = async () => {
-    if (!animation) {
-      animation = createAnalyserAnimation(player);
-      animation.start();
-    }
-
-    if (animation) animation.start();
   };
 
   const play = async () => {
-    if (!player) {
-      player = await createMediaPlayer();
-      await player.play();
-      console.log("here");
-    } else if (player.state === "playing") {
-      console.log("hu-hu");
+    if (player && player.state === "playing") {
       return;
-    } else {
-      await player.play();
+    }
+
+    if (!player.state) {
+      player = createMediaPlayer(audioElement);
+    }
+
+    player.play();
+
+    if (!animation) {
+      animation = createAnalyserAnimation(player);
+      animation.start();
     }
   };
 
   const updatePlayerButtons = () => {
     requestAnimationFrame(updatePlayerButtons);
-
-    if (!player) {
-      spinner.classList.add("w-0");
-      playButton.classList.remove("w-0");
-      pauseButton.classList.add("w-0");
-    } else if (
+    if (
       player.state === "loading" ||
       player.state === "retrying" ||
       player.state === "stopping"
@@ -197,14 +194,12 @@ const start = () => {
     }
   };
 
-  audioElement.addEventListener("pause", pause);
-  audioElement.addEventListener("play", play);
-  audioElement.addEventListener("playing", onPlay);
+  spinner.addEventListener("click", pause);
   playButton.addEventListener("click", play);
   pauseButton.addEventListener("click", pause);
   window.addEventListener("resize", resize);
 
-  play();
+  // play();
   requestAnimationFrame(updatePlayerButtons);
 };
 
