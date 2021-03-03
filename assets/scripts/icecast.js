@@ -3465,4 +3465,3 @@ IcecastMetadataPlayer = (() => {
     s(187)
   );
 })();
-//# sourceMappingURL=icecast-metadata-player-1.0.0.min.js.map

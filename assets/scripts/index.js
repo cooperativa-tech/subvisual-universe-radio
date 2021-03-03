@@ -1,6 +1,5 @@
-const RADIO_URL = "http://radiouniverso.live/radiouniverso";
-
-const onMetadata = (metadata) => {};
+const RADIO_URL = "https://radiouniverso.live/stream";
+const RADIO_SOCKET = "wss://control.radiouniverso.live/mopidy/ws/";
 
 const createCanvas = () => {
   const canvas = document.getElementById("canvas");
@@ -13,7 +12,6 @@ const createCanvas = () => {
 
 const createMediaPlayer = (audioElement) => {
   const player = new window.IcecastMetadataPlayer(RADIO_URL, {
-    onMetadata,
     audioElement,
     metadataTypes: [],
   });
@@ -51,7 +49,6 @@ const createAnalyserAnimation = (player) => {
   source.connect(audioCtx.destination);
 
   const draw = () => {
-    animation = requestAnimationFrame(draw);
     analyser.getByteTimeDomainData(timeArray);
     analyser.getByteFrequencyData(freqArray);
 
@@ -100,15 +97,7 @@ const createAnalyserAnimation = (player) => {
     }
   };
 
-  const start = () => {
-    animation = requestAnimationFrame(draw);
-  };
-
-  const stop = () => {
-    cancelAnimationFrame(animation);
-  };
-
-  return { start, stop };
+  return { tick: draw };
 };
 
 const start = () => {
@@ -123,10 +112,7 @@ const start = () => {
   let track = {};
   let artists = "";
 
-  const mopidy = new Mopidy({
-    autoConnect: true,
-    webSocketUrl: "ws://94.61.227.207:6680/mopidy/ws/",
-  });
+  const mopidy = new Mopidy({ autoConnect: true, webSocketUrl: RADIO_SOCKET });
 
   const updateDomTrackMeta = () => {
     const currentSong = document.getElementById("currentSong");
@@ -158,29 +144,24 @@ const start = () => {
     canvas.height = window.innerHeight;
   };
 
-  const pause = async () => {
-    if (player) await player.stop();
+  const pause = () => {
+    if (player) return player.stop();
   };
 
-  const play = async () => {
-    if (player && player.state === "playing") {
-      return;
-    }
-
-    if (!player.state) {
+  const play = () => {
+    if (!player || !player.state) {
       player = createMediaPlayer(audioElement);
     }
 
-    player.play();
-
-    if (!animation) {
-      animation = createAnalyserAnimation(player);
-      animation.start();
+    try {
+      if (!animation) animation = createAnalyserAnimation(player);
+      return player.play();
+    } catch (error) {
+      console.error(error);
     }
   };
 
   const updatePlayerButtons = () => {
-    requestAnimationFrame(updatePlayerButtons);
     if (
       player.state === "loading" ||
       player.state === "retrying" ||
@@ -200,13 +181,25 @@ const start = () => {
     }
   };
 
+  const update = () => {
+    requestAnimationFrame(update);
+    updatePlayerButtons();
+    if (animation) animation.tick();
+  };
+
+  requestAnimationFrame(update);
+
   spinner.addEventListener("click", pause);
   playButton.addEventListener("click", play);
   pauseButton.addEventListener("click", pause);
   window.addEventListener("resize", resize);
 
-  play();
-  requestAnimationFrame(updatePlayerButtons);
+  audioElement
+    .play()
+    .then(play)
+    .catch(() => {
+      //No autoplay for us
+    });
 };
 
 window.addEventListener("load", start);
