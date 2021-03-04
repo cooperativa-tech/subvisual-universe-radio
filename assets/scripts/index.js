@@ -1,19 +1,22 @@
-const RADIO_URL = "https://radiouniverso.live/stream";
-const RADIO_SOCKET = "wss://control.radiouniverso.live/mopidy/ws/";
+const RADIO_URL = "https://stream.radiouniverso.live/";
+const RADIO_SOCKET = "wss://radiouniverso.live/ws/";
 
 const createCanvas = () => {
   const canvas = document.getElementById("canvas");
 
   canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  canvas.height = 70;
 
   return canvas;
 };
 
-const createMediaPlayer = (audioElement) => {
+const createMediaPlayer = (audioElement, onLoad, onPlay, onStop) => {
   const player = new window.IcecastMetadataPlayer(RADIO_URL, {
     audioElement,
     metadataTypes: [],
+    onLoad,
+    onPlay,
+    onStop,
   });
 
   return player;
@@ -35,7 +38,6 @@ const createAnalyser = () => {
 };
 
 const createAnalyserAnimation = (player) => {
-  let animation;
   const canvas = createCanvas();
   const canvasCtx = canvas.getContext("2d");
   const { analyser, audioCtx } = createAnalyser();
@@ -48,63 +50,54 @@ const createAnalyserAnimation = (player) => {
   source.connect(analyser);
   source.connect(audioCtx.destination);
 
-  const draw = () => {
-    analyser.getByteTimeDomainData(timeArray);
+  const tick = () => {
+    // analyser.getByteTimeDomainData(timeArray);
     analyser.getByteFrequencyData(freqArray);
-
-    canvasCtx.fillStyle = "rgb(0, 0, 0)";
-    canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-    canvasCtx.fillStyle = "rgb(255, 255, 255)";
-
-    canvasCtx.lineWidth = 1;
-    canvasCtx.strokeStyle = "rgb(255, 255, 255)";
-    canvasCtx.beginPath();
-
-    let sliceWidth = canvas.width / length;
-    let barWidth = canvas.width / length;
-    let x = 0;
-
-    // const grd = canvasCtx.createLinearGradient(
-    //   0,
-    //   canvas.height - 120,
-    //   0,
-    //   canvas.height,
-    // );
-    // grd.addColorStop(1, "white");
-    // grd.addColorStop(0, "red");
-
-    // for (let i = 0; i < length; i++) {
-    //   const v = timeArray[i] / 128.0;
-    //   const y = v * (canvas.height / 2);
-    //
-    //   i === 0 ? canvasCtx.moveTo(x, y) : canvasCtx.lineTo(x, y);
-    //   x += sliceWidth;
-    // }
-    //
-    // canvasCtx.lineTo(canvas.width, canvas.height / 2);
-    // canvasCtx.stroke();
-
-    x = 0;
-    for (let i = 0; i < length; i++) {
-      let progress = i / length;
-      let barHeight = freqArray[i] / 2;
-
-      canvasCtx.fillStyle = "white";
-      canvasCtx.fillRect(x, canvas.height - barHeight, barWidth + 2, barHeight);
-      canvasCtx.fillStyle = "red";
-      canvasCtx.fillRect(x, canvas.height - barHeight - 4, barWidth, 2);
-      x += barWidth + 1;
-    }
   };
 
-  return { tick: draw };
+  const draw = () => {
+    canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+    canvasCtx.strokeStyle = "rgb(255, 255, 255)";
+
+    // let sliceWidth = canvas.width / length;
+    let barWidth = (canvas.width * window.devicePixelRatio) / length;
+    let barX = 0;
+    // let lineX = 0;
+
+    for (let i = 0; i < length; i++) {
+      // const v = timeArray[i];
+      // const y = canvas.height / 2 + v;
+      let progress = freqArray[i] / 240;
+      let barHeight = progress * 70;
+      let x = barX - barWidth / 2;
+      // i === 0 ? canvasCtx.moveTo(lineX, y) : canvasCtx.lineTo(lineX, y);
+
+      if (freqArray[i] <= 0) {
+        return (barX += barWidth);
+      }
+
+      canvasCtx.fillStyle = `rgba(255,255,255, ${progress})`;
+      canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+      // canvasCtx.fillStyle = `rgba(255,0,0, ${(freqArray[i] / 240) * 1})`;
+      // canvasCtx.fillRect(barX, canvas.height - barHeight - 1, barWidth + 1, 2);
+
+      barX += barWidth;
+      // lineX += sliceWidth;
+    }
+
+    // canvasCtx.stroke();
+  };
+
+  return { draw, tick };
 };
 
 const start = () => {
+  let animationLoop, updateLoop;
   let audioElement = createAudioElement();
   let player = {};
   let animation = null;
 
+  const album = document.getElementById("album");
   const spinner = document.getElementById("loading");
   const playButton = document.getElementById("play");
   const pauseButton = document.getElementById("pause");
@@ -114,7 +107,25 @@ const start = () => {
 
   const mopidy = new Mopidy({ autoConnect: true, webSocketUrl: RADIO_SOCKET });
 
-  const updateDomTrackMeta = () => {
+  const onLoad = () => {
+    playButton.classList.add("w-0");
+    pauseButton.classList.add("w-0");
+    spinner.classList.remove("w-0");
+  };
+
+  const onPlay = () => {
+    spinner.classList.add("w-0");
+    playButton.classList.add("w-0");
+    pauseButton.classList.remove("w-0");
+  };
+
+  const onStop = () => {
+    spinner.classList.add("w-0");
+    playButton.classList.remove("w-0");
+    pauseButton.classList.add("w-0");
+  };
+
+  const updateDomTrackMeta = async () => {
     const currentSong = document.getElementById("currentSong");
     const currentartist = document.getElementById("currentArtist");
 
@@ -125,6 +136,16 @@ const start = () => {
 
     currentSong.textContent = `${track.name}`;
     currentArtist.textContent = `${artists}`;
+
+    const {
+      album: { uri },
+    } = track;
+    const images = await mopidy.library.getImages([[uri]]);
+    const [image] = images[uri];
+
+    album.src = image.uri;
+    // album.width = image.width;
+    // album.height = image.height;
   };
 
   mopidy.on("event", (type, { tl_track }) => {
@@ -145,54 +166,47 @@ const start = () => {
   };
 
   const pause = () => {
-    if (player) return player.stop();
+    if (player) player.stop();
+    if (animationLoop) {
+      cancelAnimationFrame(animationLoop);
+      animationLoop = null;
+    }
   };
 
   const play = () => {
     if (!player || !player.state) {
-      player = createMediaPlayer(audioElement);
+      player = createMediaPlayer(audioElement, onLoad, onPlay, onStop);
     }
 
     try {
       if (!animation) animation = createAnalyserAnimation(player);
-      return player.play();
+
+      player.play();
+      if (!animationLoop) requestAnimationFrame(draw);
     } catch (error) {
       console.error(error);
     }
   };
 
-  const updatePlayerButtons = () => {
-    if (
-      player.state === "loading" ||
-      player.state === "retrying" ||
-      player.state === "stopping"
-    ) {
-      playButton.classList.add("w-0");
-      pauseButton.classList.add("w-0");
-      spinner.classList.remove("w-0");
-    } else if (player.state === "playing") {
-      spinner.classList.add("w-0");
-      playButton.classList.add("w-0");
-      pauseButton.classList.remove("w-0");
-    } else {
-      spinner.classList.add("w-0");
-      playButton.classList.remove("w-0");
-      pauseButton.classList.add("w-0");
-    }
-  };
-
-  const update = () => {
-    requestAnimationFrame(update);
-    updatePlayerButtons();
+  const draw = () => {
+    animationLoop = requestAnimationFrame(draw);
     if (animation) animation.tick();
+    if (animation) animation.draw();
   };
-
-  requestAnimationFrame(update);
 
   spinner.addEventListener("click", pause);
   playButton.addEventListener("click", play);
   pauseButton.addEventListener("click", pause);
   window.addEventListener("resize", resize);
+  window.addEventListener("blur", () => {
+    if (animationLoop) {
+      cancelAnimationFrame(animationLoop);
+      animationLoop = null;
+    }
+  });
+  window.addEventListener("focus", () => {
+    if (!animationLoop) requestAnimationFrame(draw);
+  });
 
   audioElement
     .play()

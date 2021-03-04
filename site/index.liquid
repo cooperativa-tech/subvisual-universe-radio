@@ -3,7 +3,7 @@ layout: layouts/base.liquid
 ---
 <h1 class="mb-4 text-lg">Now streaming:</h1>
 
-<div class="flex justify-start items-center sm:flex-col sm:items-start">
+<div class="flex justify-start items-center sm:flex-col sm:items-start sm:justify-center">
   <button id="pause" class="w-0">
     <img width="35px" height="35px" src="/images/pause.svg"></img>
   </button>
@@ -13,9 +13,12 @@ layout: layouts/base.liquid
   <button id="loading">
     <img width="35px" height="35px" class="animate-spin duration-1400" src="/images/loading.svg"></img>
   </button>
-  <h2 class="ml-8 mb-1" id="currentSong">&nbsp;</h2>
+  <h2 class="ml-8 mb-1 sm:ml-0 sm:mt-8" id="currentSong">&nbsp;</h2>
   <span class="sm:invisible">&nbsp; - &nbsp;</span>
   <p id="currentArtist">&nbsp;</p>
+</div>
+<div class="mt-8 flex justify-center items-center opacity-60 shadow-2xl">
+  <img class="album max-h-80" id="album"></img>
 </div>
 
 <audio
@@ -25,7 +28,7 @@ layout: layouts/base.liquid
   autoplay="true"
 >
   <source
-    src="https://radiouniverso.live/stream"
+    src="https://stream.radiouniverso.live"
     type="audio/webm"
   />
 </audio>
