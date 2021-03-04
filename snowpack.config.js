@@ -5,6 +5,7 @@ module.exports = {
     static: "/",
   },
   plugins: [
+    "snowpack-plugin-hash",
     "@snowpack/plugin-postcss",
     [
       "@snowpack/plugin-run-script",
