@@ -1,9 +1,9 @@
 ---
 layout: layouts/base.liquid
 ---
-<h1 class="mb-4 text-lg">Now streaming:</h1>
+<h1 class="relative mb-4 text-lg z-20">Now streaming:</h1>
 
-<div class="flex justify-start items-center sm:flex-col sm:items-start sm:justify-center">
+<div class="relative flex justify-start items-center sm:flex-col sm:items-start sm:justify-center z-20">
   <button id="pause" class="w-0">
     <img width="35px" height="35px" src="/images/pause.svg"></img>
   </button>
@@ -17,11 +17,13 @@ layout: layouts/base.liquid
   <span class="sm:invisible">&nbsp; - &nbsp;</span>
   <p id="currentArtist">&nbsp;</p>
 </div>
-<div class="mt-8 flex justify-center items-center opacity-60 shadow-2xl">
-  <img class="album max-h-80" id="album"></img>
+<div class="absolute top-0 left-0 w-screen min-h-screen flex justify-center items-center pointer-events-none p-6 pt-32 z-10 opacity-50">
+  <img id="album" class="shadow-2xl max-h-96"></img>
 </div>
 
 <audio
+  id="audio"
+  class="hidden"
   xmlns="http://www.w3.org/1999/xhtml"
   controls="controls"
   preload="none"
@@ -33,4 +35,8 @@ layout: layouts/base.liquid
   />
 </audio>
 
+<canvas id="canvas" class="fixed bottom-0 left-0 z-0"></canvas>
+
+<script src="/assets/scripts/icecast.js"></script>
+<script src="/assets/scripts/mopidy.js"></script>
 <script type="module" src="/assets/scripts/index.js"></script>

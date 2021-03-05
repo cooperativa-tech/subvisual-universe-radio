@@ -23,7 +23,7 @@ const createMediaPlayer = (audioElement, onLoad, onPlay, onStop) => {
 };
 
 const createAudioElement = () => {
-  const [audioElement, ...rest] = document.getElementsByTagName("audio");
+  const audioElement = document.getElementById("audio");
 
   return audioElement;
 };
@@ -72,12 +72,11 @@ const createAnalyserAnimation = (player) => {
       let x = barX - barWidth / 2;
       // i === 0 ? canvasCtx.moveTo(lineX, y) : canvasCtx.lineTo(lineX, y);
 
-      if (freqArray[i] <= 0) {
-        return (barX += barWidth);
+      if (freqArray[i] > 0) {
+        canvasCtx.fillStyle = `rgba(255,255,255, ${progress})`;
+        canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
       }
 
-      canvasCtx.fillStyle = `rgba(255,255,255, ${progress})`;
-      canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
       // canvasCtx.fillStyle = `rgba(255,0,0, ${(freqArray[i] / 240) * 1})`;
       // canvasCtx.fillRect(barX, canvas.height - barHeight - 1, barWidth + 1, 2);
 
@@ -101,6 +100,8 @@ const start = () => {
   const spinner = document.getElementById("loading");
   const playButton = document.getElementById("play");
   const pauseButton = document.getElementById("pause");
+  const currentSong = document.getElementById("currentSong");
+  const currentartist = document.getElementById("currentArtist");
 
   let track = {};
   let artists = "";
@@ -126,9 +127,6 @@ const start = () => {
   };
 
   const updateDomTrackMeta = async () => {
-    const currentSong = document.getElementById("currentSong");
-    const currentartist = document.getElementById("currentArtist");
-
     artists = track.artists.reduce(
       (acc, { name }) => (acc.length ? `${acc}, ${name}` : name),
       "",
@@ -166,7 +164,8 @@ const start = () => {
   };
 
   const pause = () => {
-    if (player) player.stop();
+    if (player && player.stop) player.stop();
+    else onStop();
     if (animationLoop) {
       cancelAnimationFrame(animationLoop);
       animationLoop = null;
@@ -213,6 +212,7 @@ const start = () => {
     .then(play)
     .catch(() => {
       //No autoplay for us
+      onStop();
     });
 };
 

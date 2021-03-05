@@ -34,18 +34,3 @@ html {
     @apply text-lg;
   }
 }
-
-audio {
-  display: none;
-}
-
-canvas {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-
-  pointer-events: none;
-
-  background: none;
-}
