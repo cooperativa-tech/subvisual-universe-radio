@@ -34,3 +34,7 @@ html {
     @apply text-lg;
   }
 }
+
+#canvas {
+  z-index: -1;
+}

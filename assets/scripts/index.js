@@ -5,7 +5,7 @@ const createCanvas = () => {
   const canvas = document.getElementById("canvas");
 
   canvas.width = window.innerWidth;
-  canvas.height = 70;
+  canvas.height = window.innerHeight;
 
   return canvas;
 };
@@ -74,7 +74,12 @@ const createAnalyserAnimation = (player) => {
 
       if (freqArray[i] > 0) {
         canvasCtx.fillStyle = `rgba(255,255,255, ${progress})`;
-        canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+        canvasCtx.fillRect(
+          x,
+          canvas.height - canvas.height / 4 - barHeight,
+          barWidth,
+          canvas.height / 4 + barHeight,
+        );
       }
 
       // canvasCtx.fillStyle = `rgba(255,0,0, ${(freqArray[i] / 240) * 1})`;
@@ -98,6 +103,7 @@ const start = () => {
 
   const album = document.getElementById("album");
   const spinner = document.getElementById("loading");
+  const volumne = document.getElementById("loading");
   const playButton = document.getElementById("play");
   const pauseButton = document.getElementById("pause");
   const currentSong = document.getElementById("currentSong");
@@ -107,44 +113,6 @@ const start = () => {
   let artists = "";
 
   const mopidy = new Mopidy({ autoConnect: true, webSocketUrl: RADIO_SOCKET });
-
-  const onLoad = () => {
-    playButton.classList.add("w-0");
-    pauseButton.classList.add("w-0");
-    spinner.classList.remove("w-0");
-  };
-
-  const onPlay = () => {
-    spinner.classList.add("w-0");
-    playButton.classList.add("w-0");
-    pauseButton.classList.remove("w-0");
-  };
-
-  const onStop = () => {
-    spinner.classList.add("w-0");
-    playButton.classList.remove("w-0");
-    pauseButton.classList.add("w-0");
-  };
-
-  const updateDomTrackMeta = async () => {
-    artists = track.artists.reduce(
-      (acc, { name }) => (acc.length ? `${acc}, ${name}` : name),
-      "",
-    );
-
-    currentSong.textContent = `${track.name}`;
-    currentArtist.textContent = `${artists}`;
-
-    const {
-      album: { uri },
-    } = track;
-    const images = await mopidy.library.getImages([[uri]]);
-    const [image] = images[uri];
-
-    album.src = image.uri;
-    // album.width = image.width;
-    // album.height = image.height;
-  };
 
   mopidy.on("event", (type, { tl_track }) => {
     if (type === "event:trackPlaybackStarted" && tl_track) {
@@ -157,6 +125,44 @@ const start = () => {
     track = await mopidy.playback.getCurrentTrack();
     updateDomTrackMeta();
   });
+
+  const onLoad = () => {
+    playButton.classList.add("hidden");
+    pauseButton.classList.add("hidden");
+    spinner.classList.remove("hidden");
+  };
+
+  const onPlay = () => {
+    spinner.classList.add("hidden");
+    playButton.classList.add("hidden");
+    pauseButton.classList.remove("hidden");
+  };
+
+  const onStop = () => {
+    spinner.classList.add("hidden");
+    playButton.classList.remove("hidden");
+    pauseButton.classList.add("hidden");
+  };
+
+  const updateDomTrackMeta = async () => {
+    artists = track.artists.reduce(
+      (acc, { name }) => (acc.length ? `${acc}, ${name}` : name),
+      "",
+    );
+
+    currentSong.textContent = `${track.name}`;
+    currentArtist.textContent = `by: ${artists}`;
+
+    const {
+      album: { uri },
+    } = track;
+    const images = await mopidy.library.getImages([[uri]]);
+    const [image] = images[uri];
+
+    album.src = image.uri;
+    // album.width = image.width;
+    // album.height = image.height;
+  };
 
   const resize = () => {
     canvas.width = window.innerWidth;
@@ -196,6 +202,10 @@ const start = () => {
   spinner.addEventListener("click", pause);
   playButton.addEventListener("click", play);
   pauseButton.addEventListener("click", pause);
+  volume.addEventListener("change", ({ target: { value } }) => {
+    console.log(value);
+    audioElement.volume = value;
+  });
   window.addEventListener("resize", resize);
   window.addEventListener("blur", () => {
     if (animationLoop) {

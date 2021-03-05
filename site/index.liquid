@@ -1,23 +1,36 @@
 ---
 layout: layouts/base.liquid
 ---
-<h1 class="relative mb-4 text-lg z-20">Now streaming:</h1>
 
-<div class="relative flex justify-start items-center sm:flex-col sm:items-start sm:justify-center z-20">
-  <button id="pause" class="w-0">
-    <img width="35px" height="35px" src="/images/pause.svg"></img>
-  </button>
-  <button id="play" class="w-0">
-    <img width="35px" height="35px" src="/images/play.svg"></img>
-  </button>
-  <button id="loading">
-    <img width="35px" height="35px" class="animate-spin duration-1400" src="/images/loading.svg"></img>
-  </button>
-  <h2 class="ml-8 mb-1 sm:ml-0 sm:mt-8" id="currentSong">&nbsp;</h2>
-  <span class="sm:invisible">&nbsp; - &nbsp;</span>
-  <p id="currentArtist">&nbsp;</p>
+<div class="flex justify-between items-center mb-8">
+  <h1 class="text-lg z-20">Now streaming:</h1>
+
+  <div class="flex items-center">
+    <label for="volume">Volume: </label>
+    <div class="relative ml-8">
+      <input type="range" name="volume" id="volume" min="0" max="1" step="0.01" value="1"/>
+      <div class="absolute top-2/4 h-px w-full bg-white"></div>
+    </div>
+  </div>
 </div>
-<div class="absolute top-0 left-0 w-screen min-h-screen flex justify-center items-center pointer-events-none p-6 pt-32 z-10 opacity-50">
+
+<div class="flex justify-start items-center sm:flex-col sm:items-start sm:justify-center z-20">
+  <button id="pause" class="w-16 h-16 hidden">
+    <img src="/images/pause.svg"></img>
+  </button>
+  <button id="play" class="w-16 h-16 hidden">
+    <img src="/images/play.svg"></img>
+  </button>
+  <button id="loading" class="w-16 h-16">
+    <img class="animate-spin duration-1400" src="/images/loading.svg"></img>
+  </button>
+  <div class="flex flex-col justify-start items-start">
+    <h2 class="ml-8 mb-1 sm:ml-0 sm:mt-8" id="currentSong">&nbsp;</h2>
+    <p class="ml-8 mb-1 sm:ml-0 sm:mt-8" id="currentArtist">&nbsp;</p>
+  </div>
+</div>
+
+<div class="relative w-full min-h-full flex justify-center items-center pointer-events-none p-6 pt-16 z-10">
   <img id="album" class="shadow-2xl max-h-96"></img>
 </div>
 
@@ -35,7 +48,7 @@ layout: layouts/base.liquid
   />
 </audio>
 
-<canvas id="canvas" class="fixed bottom-0 left-0 z-0"></canvas>
+<canvas id="canvas" class="fixed bottom-0 left-0 pointer-events-none"></canvas>
 
 <script src="/assets/scripts/icecast.js"></script>
 <script src="/assets/scripts/mopidy.js"></script>
