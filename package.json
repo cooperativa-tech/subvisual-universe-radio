@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "icecast-metadata-player": "1.1.1",
-    "mopidy": "^1.2.1",
     "mopidy-es6": "^0.0.5"
   },
   "devDependencies": {

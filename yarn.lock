@@ -5674,11 +5674,6 @@ isobject@^3.0.0, isobject@^3.0.1:
   resolved "https://registry.yarnpkg.com/isobject/-/isobject-3.0.1.tgz#4e431e92b11a9731636aa1f9c8d1ccbcfdab78df"
   integrity sha1-TkMekrEalzFjaqH5yNHMvP2reN8=
 
-isomorphic-ws@^4.0.1:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/isomorphic-ws/-/isomorphic-ws-4.0.1.tgz#55fd4cd6c5e6491e76dc125938dd863f5cd4f2dc"
-  integrity sha512-BhBvN2MBpWTaSHdWRb/bwdZJ1WaehQ2L1KngkCkfLUGF0mAWAT1sQUQacEmQ0jXkFw/czDXPNQSL5u2/Krsz1w==
-
 isstream@~0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/isstream/-/isstream-0.1.2.tgz#47e63f7af55afa6f92e1500e690eb8b8529c099a"
@@ -6577,14 +6572,6 @@ mopidy-es6@^0.0.5:
   version "0.0.5"
   resolved "https://registry.yarnpkg.com/mopidy-es6/-/mopidy-es6-0.0.5.tgz#8c7359644febe32ba04ba7fdf3494a1d16864783"
   integrity sha1-jHNZZE/r4yugS6f980lKHRaGR4M=
-
-mopidy@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/mopidy/-/mopidy-1.2.1.tgz#5cdf015d6d5a29ca255accb4bba58dbf02004f0d"
-  integrity sha512-XAqPuRvD8J5THbjjAeIpHgR/PMPwO/zKUWU0/01OTM0/dIi0gjYDnlIhk3lOyZcd5D7sFfnxVL5dHjLyCNG3uw==
-  dependencies:
-    isomorphic-ws "^4.0.1"
-    ws "^7.3.1"
 
 move-concurrently@^1.0.1:
   version "1.0.1"
@@ -10664,11 +10651,6 @@ ws@^7.0.0, ws@^7.2.3:
   version "7.4.0"
   resolved "https://registry.yarnpkg.com/ws/-/ws-7.4.0.tgz#a5dd76a24197940d4a8bb9e0e152bb4503764da7"
   integrity sha512-kyFwXuV/5ymf+IXhS6f0+eAFvydbaBW3zjpT6hUdAh/hbVjTIB5EHBGi0bPoCLSK2wcuz3BrEkB9LrYv1Nm4NQ==
-
-ws@^7.3.1:
-  version "7.4.3"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-7.4.3.tgz#1f9643de34a543b8edb124bdcbc457ae55a6e5cd"
-  integrity sha512-hr6vCR76GsossIRsr8OLR9acVVm1jyfEWvhbNjtgPOrfvAlKzvyeg/P6r8RuDjRyrcQoPQT7K0DGEPc7Ae6jzA==
 
 ws@~3.3.1:
   version "3.3.3"
