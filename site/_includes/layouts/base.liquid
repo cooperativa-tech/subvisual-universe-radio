@@ -3,7 +3,17 @@
   <head>
     <link href="/assets/styles/index.css" rel="stylesheet"/>
 
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#045cfc">
+
+    <meta name="msapplication-TileColor" content="#045cfc">
+    <meta name="theme-color" content="#ffffff">
+
     <meta charset="utf-8" />
+
     <title>{{title | default: metadata.title}}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="{{ metadata.description }}" />
@@ -11,15 +21,16 @@
   </head>
 
   <body class="min-h-screen bg-black max-w-5xl mx-auto px-6 py-16">
-    <nav class="flex justify-between mb-20 text-2xl">
-      <a href="/">Radio Universe</a>
+    <nav class="relative z-20 flex justify-between mb-20 text-2xl">
+      <a class="flex items-end"href="/">
+        <div class="w-9 h-9 mr-4">{% include icons/radio.svg %}</div>
+        Radio Universo
+      </a>
       <a class="underline" href="/all">All transmissions</a>
     </nav>
 
     <main>
       {{ content | safe }}
     </main>
-
-    <script type="module" src="/assets/scripts/index.js"></script>
   </body>
 </html>

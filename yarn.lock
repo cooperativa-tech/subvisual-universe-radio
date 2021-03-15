@@ -2670,6 +2670,11 @@ code-point-at@^1.0.0:
   resolved "https://registry.yarnpkg.com/code-point-at/-/code-point-at-1.1.0.tgz#0d070b4d043a5bea33a2f1a40e2edb3d9a4ccf77"
   integrity sha1-DQcLTQQ6W+ozovGkDi7bPZpMz3c=
 
+codec-parser@0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/codec-parser/-/codec-parser-0.0.4.tgz#c918686f76aa5ab07fbbc42ba95d8edbe78d3a18"
+  integrity sha512-Uc9e1Qmu3QZFhSWGKBVrf06Q5Q81I/M/QDOuN5Yh3cCYRwrHR0Dj8/aZOj27VNBNePZH2CtMEDnGKD5VK0KK1g==
+
 collection-visit@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/collection-visit/-/collection-visit-1.0.0.tgz#4bc0373c164bc3291b4d368c829cf1a80a59dca0"
@@ -5087,6 +5092,20 @@ hyperhtml-style@^0.1.2:
   resolved "https://registry.yarnpkg.com/hyperhtml-style/-/hyperhtml-style-0.1.2.tgz#c7a7904656a95575d5afdd06ac96bb4d757e0197"
   integrity sha512-ZDRYNClEaqUS0a8RAED0nQRqWmZk7ctdyij3Iw/PqUUef6xhYO87nx9vJNuxg7Yc6J2FdJjXRKbB0iud2ZyzwQ==
 
+icecast-metadata-js@0.5.1:
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/icecast-metadata-js/-/icecast-metadata-js-0.5.1.tgz#5f20cf9aa7be007843f5ba139f9c0391ec706204"
+  integrity sha512-712/jBfwJ1Atr++dn0SV6wxcZBFY5LhRQI+OFZH7kaiZ5lqA9333RkyC8TMpEOQqn9Q7zcNtXlBh1POeDd9H+g==
+
+icecast-metadata-player@1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/icecast-metadata-player/-/icecast-metadata-player-1.1.1.tgz#c8e1c7a1c5e1de3561124356ded581adce789c39"
+  integrity sha512-s2abs/beSA/akNnC8EnxkoPkMLOsLcl057aN6wFUIgQp2m9OjpLi6gT5JC0MtSElXlLMLDQDLjqIjB6HZpIAug==
+  dependencies:
+    codec-parser "0.0.4"
+    icecast-metadata-js "0.5.1"
+    mse-audio-wrapper "1.2.1"
+
 iconv-lite@0.4.24:
   version "0.4.24"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.4.24.tgz#2022b4b25fbddc21d2f524974a474aafe733908b"
@@ -6549,6 +6568,11 @@ moo@^0.5.1:
   resolved "https://registry.yarnpkg.com/moo/-/moo-0.5.1.tgz#7aae7f384b9b09f620b6abf6f74ebbcd1b65dbc4"
   integrity sha512-I1mnb5xn4fO80BH9BLcF0yLypy2UKl+Cb01Fu0hJRkJjlCRtxZMWkTdAtDd5ZqCOxtCkhmRwyI57vWT+1iZ67w==
 
+mopidy-es6@^0.0.5:
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/mopidy-es6/-/mopidy-es6-0.0.5.tgz#8c7359644febe32ba04ba7fdf3494a1d16864783"
+  integrity sha1-jHNZZE/r4yugS6f980lKHRaGR4M=
+
 move-concurrently@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/move-concurrently/-/move-concurrently-1.0.1.tgz#be2c005fda32e0b29af1f05d7c4b33214c701f92"
@@ -6570,6 +6594,13 @@ ms@2.1.2, ms@^2.1.1:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.2.tgz#d09d1f357b443f493382a8eb3ccd183872ae6009"
   integrity sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==
+
+mse-audio-wrapper@1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/mse-audio-wrapper/-/mse-audio-wrapper-1.2.1.tgz#430dd95b5a81c3bbfe9c431104b4e17b2fba85f8"
+  integrity sha512-+ScpWr+iYEiNxhXe2Y9jRrXPd6qPptkD/rNAh8JtxJk34xKWNcPbsbgfvgN4WcHSpjmKxzE+iKQxXXy+VHh/YA==
+  dependencies:
+    codec-parser "0.0.4"
 
 multimatch@^4.0.0:
   version "4.0.0"

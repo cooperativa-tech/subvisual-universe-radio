@@ -34,3 +34,23 @@ html {
     @apply text-lg;
   }
 }
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+    input[type='range'] {
+      box-shadow: none;
+      border-radius: 12px;
+      -webkit-appearance: none;
+    }
+
+    input[type='range']::-webkit-slider-runnable-track {
+      -webkit-appearance: none;
+    }
+
+    input[type='range']::-webkit-slider-thumb {
+      width: 10px;
+      height: 10px;
+      background: #ffffff;
+      border-radius: 50%;
+      -webkit-appearance: none;
+    }
+}

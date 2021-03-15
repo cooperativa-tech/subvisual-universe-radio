@@ -3,11 +3,14 @@
   "scripts": {
     "dev": "NODE_ENV=development snowpack dev --polyfill-node",
     "optimize-fonts": "subfont $(find build -name '*.html') --in-place --no-fallbacks --inline-fonts --inline-css --font-display block",
-    "build": "NODE_ENV=production snowpack build && yarn optimize-fonts",
+    "build": "NODE_ENV=production snowpack build --polyfill-node && yarn optimize-fonts",
     "format": "prettier --write \"**/*.js\" *.js \"**/*.css\"",
     "lint": "prettier --check \"**/*.js\" *.js \"**/*.css\""
   },
-  "dependencies": {},
+  "dependencies": {
+    "icecast-metadata-player": "1.1.1",
+    "mopidy-es6": "^0.0.5"
+  },
   "devDependencies": {
     "@11ty/eleventy": "^0.11.0",
     "@snowpack/plugin-postcss": "^1.1.0",
