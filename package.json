@@ -8,8 +8,9 @@
     "lint": "prettier --check \"**/*.js\" *.js \"**/*.css\""
   },
   "dependencies": {
-    "icecast-metadata-player": "^0.3.0",
-    "mopidy": "^1.2.1"
+    "icecast-metadata-player": "1.1.1",
+    "mopidy": "^1.2.1",
+    "mopidy-es6": "^0.0.5"
   },
   "devDependencies": {
     "@11ty/eleventy": "^0.11.0",

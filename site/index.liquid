@@ -2,33 +2,40 @@
 layout: layouts/base.liquid
 ---
 
-<section class="relative z-20">
-  <div class="flex justify-between items-center mb-8">
-    <h1 class="text-lg">Now streaming:</h1>
-  </div>
-
-  <div class="flex justify-start items-center sm:flex-col sm:items-start sm:justify-center">
-    <button id="pause" class="w-16 h-16 hidden">
-      <img src="/images/pause.svg"></img>
-    </button>
-    <button id="play" class="w-16 h-16 hidden">
-      <img src="/images/play.svg"></img>
-    </button>
-    <button id="loading" class="w-16 h-16">
-      <img class="animate-spin duration-1400" src="/images/loading.svg"></img>
-    </button>
-    <div class="flex flex-col justify-start items-start">
-      <h2 class="ml-8 mb-1 sm:ml-0 sm:mt-8" id="currentSong">&nbsp;</h2>
-      <p class="ml-8 mb-1 sm:ml-0 sm:mt-8" id="currentArtist">&nbsp;</p>
-    </div>
-  </div>
-  <div class="flex items-center mt-8">
-    <label for="volume">Volume: </label>
-    <input class="opacity-1 ml-4 ring-1 ring-white cursor-pointer" type="range" name="volume" id="volume" min="0" max="1" step="0.01" value="1"/>
-  </div>
-
-  <div class="w-full min-h-full flex justify-center items-center p-6 pt-16">
+<section class="relative z-20 flex flex-col justify-end">
+  <div class="flex justify-center mb-16 mt-16 sm:mb-8 sm:mt-8 sm:max-h-56">
     <img id="album" class="shadow-2xl max-h-96"></img>
+  </div>
+
+  <div class="flex justify-around items-center sm:flex-col">
+    <button id="pause" class="w-16 h-16 hidden rounded-full shadow-2xl">
+      {% include icons/pause.svg %}
+    </button>
+    <button id="play" class="w-16 h-16 rounded-full shadow-2xl">
+      {% include icons/play.svg %}
+    </button>
+    <button id="loading" class="w-16 h-16 hidden rounded-full shadow-2xl">
+      <div class="animate-spin duration-1400">
+        {% include icons/loading.svg %}
+      </div>
+    </button>
+
+    <div class="flex flex-col justify-center items-center sm:mt-8">
+      <h1 class="text-3xl mb-1" id="currentSong">&nbsp;</h2>
+      <p id="currentArtist">&nbsp;</p>
+    </div>
+
+    <div class="relative flex items-center sm:hidden">
+      <div class="flex justify-center items-center w-16 h-16 rounded-full shadow-2xl bg-white text-black cursor-pointer">
+        <div class="w-9 h-9">
+          <label for="volume">{% include icons/volume-on.svg %}</label>
+          <label for="volume" class="hidden">{% include icons/volume-off.svg %}</label>
+        </div>
+      </div>
+      <div class="transition duration-300 ease-in-out absolute pt-24 pb-12 transform -translate-x-2/4 -translate-y-8 top-1/2 left-1/2 opacity-0 hover:-translate-y-10 hover:opacity-100">
+        <input class="shadow-2xl opacity-1 ring-1 ring-white cursor-pointer bg-opacity-10 bg-white" type="range" name="volume" id="volume" min="0" max="1" step="0.01" value="1"/>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -36,8 +43,6 @@ layout: layouts/base.liquid
   id="audio"
   class="hidden"
   xmlns="http://www.w3.org/1999/xhtml"
-  controls="controls"
-  preload="none"
   autoplay="true"
 >
   <source
@@ -46,8 +51,11 @@ layout: layouts/base.liquid
   />
 </audio>
 
-<canvas id="canvas" style="filter: blur(12px); transform: translateZ(1px);" class="fixed bottom-0 left-0 pointer-events-none z-0"></canvas>
+<canvas
+  id="canvas"
+  class="fixed bottom-0 left-0 pointer-events-none z-0"
+  style="filter: blur(12px); min-width: 100%;"
+>
+</canvas>
 
-<script src="/assets/scripts/icecast.js"></script>
-<script src="/assets/scripts/mopidy.js"></script>
 <script type="module" src="/assets/scripts/index.js"></script>

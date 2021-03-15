@@ -1,135 +1,29 @@
+import Mopidy from "mopidy-es6";
+import IcecastMetadataPlayer from "icecast-metadata-player";
+
+import createAnalyserAnimation from "./animation.js";
+
 const RADIO_URL = "https://stream.radiouniverso.live/";
 const RADIO_SOCKET = "wss://radiouniverso.live/ws/";
 
-const createCanvas = () => {
-  const canvas = document.getElementById("canvas");
-
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  return canvas;
-};
-
-const createMediaPlayer = (audioElement, onLoad, onPlay, onStop) => {
-  const player = new window.IcecastMetadataPlayer(RADIO_URL, {
-    audioElement,
-    metadataTypes: [],
-    onLoad,
-    onPlay,
-    onStop,
-  });
-
-  return player;
-};
-
-const createAudioElement = () => {
-  const audioElement = document.getElementById("audio");
-
-  return audioElement;
-};
-
-const createAnalyser = () => {
-  let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  let analyser = audioCtx.createAnalyser();
-  analyser.fftSize = 2048;
-  analyser.smoothingTimeConstant = 0.95;
-
-  return { analyser, audioCtx };
-};
-
-const createAnalyserAnimation = (player) => {
-  const canvas = createCanvas();
-  const canvasCtx = canvas.getContext("2d");
-  const { analyser, audioCtx } = createAnalyser();
-
-  const length = analyser.frequencyBinCount;
-  let timeArray = new Uint8Array(length);
-  let freqArray = new Uint8Array(length);
-
-  let source = audioCtx.createMediaElementSource(player.audioElement);
-  source.connect(analyser);
-  source.connect(audioCtx.destination);
-
-  const tick = () => {
-    // analyser.getByteTimeDomainData(timeArray);
-    analyser.getByteFrequencyData(freqArray);
-  };
-
-  const draw = () => {
-    canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-    canvasCtx.strokeStyle = "rgb(255, 255, 255)";
-
-    // let sliceWidth = canvas.width / length;
-    let barWidth = (canvas.width * window.devicePixelRatio) / length;
-    let barX = 0;
-    // let lineX = 0;
-
-    for (let i = 0; i < length; i++) {
-      // const v = timeArray[i];
-      // const y = canvas.height / 2 + v;
-      let progress = freqArray[i] / 240;
-      let barHeight = progress * 70;
-      let x = barX - barWidth / 2;
-      // i === 0 ? canvasCtx.moveTo(lineX, y) : canvasCtx.lineTo(lineX, y);
-
-      if (freqArray[i] > 0) {
-        canvasCtx.fillStyle = `rgba(255,255,255, ${progress})`;
-        canvasCtx.fillRect(
-          x,
-          canvas.height - canvas.height / 4 - barHeight,
-          barWidth,
-          canvas.height / 4 + barHeight,
-        );
-      }
-
-      // canvasCtx.fillStyle = `rgba(255,0,0, ${(freqArray[i] / 240) * 1})`;
-      // canvasCtx.fillRect(barX, canvas.height - barHeight - 1, barWidth + 1, 2);
-
-      barX += barWidth;
-      // lineX += sliceWidth;
-    }
-
-    // canvasCtx.stroke();
-  };
-
-  return { draw, tick };
-};
-
 const start = () => {
-  let animationLoop, updateLoop;
-  let audioElement = createAudioElement();
-  let player = {};
-  let animation = null;
+  let animationLoop;
+  let track = {};
+  let artists = "";
 
   const album = document.getElementById("album");
   const spinner = document.getElementById("loading");
   const volumne = document.getElementById("loading");
   const playButton = document.getElementById("play");
   const pauseButton = document.getElementById("pause");
+  const audioElement = document.getElementById("audio");
   const currentSong = document.getElementById("currentSong");
-  const currentartist = document.getElementById("currentArtist");
-
-  let track = {};
-  let artists = "";
-
-  const mopidy = new Mopidy({ autoConnect: true, webSocketUrl: RADIO_SOCKET });
-
-  mopidy.on("event", (type, { tl_track }) => {
-    if (type === "event:trackPlaybackStarted" && tl_track) {
-      track = tl_track.track;
-      updateDomTrackMeta();
-    }
-  });
-
-  mopidy.on("state:online", async () => {
-    track = await mopidy.playback.getCurrentTrack();
-    updateDomTrackMeta();
-  });
+  const currentArtist = document.getElementById("currentArtist");
 
   const onLoad = () => {
+    spinner.classList.remove("hidden");
     playButton.classList.add("hidden");
     pauseButton.classList.add("hidden");
-    spinner.classList.remove("hidden");
   };
 
   const onPlay = () => {
@@ -144,6 +38,15 @@ const start = () => {
     pauseButton.classList.add("hidden");
   };
 
+  const onRetry = () => {
+    if (player) player.stop();
+  };
+
+  const resize = () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  };
+
   const updateDomTrackMeta = async () => {
     artists = track.artists.reduce(
       (acc, { name }) => (acc.length ? `${acc}, ${name}` : name),
@@ -152,42 +55,25 @@ const start = () => {
 
     currentSong.textContent = `${track.name}`;
     currentArtist.textContent = `by: ${artists}`;
+    document.title = `${track.name} - Radio Universo`;
 
-    const {
-      album: { uri },
-    } = track;
-    const images = await mopidy.library.getImages([[uri]]);
-    const [image] = images[uri];
-
-    album.src = image.uri;
-    // album.width = image.width;
-    // album.height = image.height;
-  };
-
-  const resize = () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    const images = await mopidy.library.getImages([track.album.uri]);
+    album.src = images[track.album.uri][0].uri;
   };
 
   const pause = () => {
     if (player && player.stop) player.stop();
     else onStop();
-    if (animationLoop) {
-      cancelAnimationFrame(animationLoop);
-      animationLoop = null;
-    }
   };
 
   const play = () => {
     if (!player || !player.state) {
-      player = createMediaPlayer(audioElement, onLoad, onPlay, onStop);
+      player = createMediaPlayer(audioElement, onLoad, onPlay, onStop, onRetry);
     }
 
     try {
-      if (!animation) animation = createAnalyserAnimation(player);
-
+      audioElement.play();
       player.play();
-      if (!animationLoop) requestAnimationFrame(draw);
     } catch (error) {
       console.error(error);
     }
@@ -199,13 +85,40 @@ const start = () => {
     if (animation) animation.draw();
   };
 
+  let player = new IcecastMetadataPlayer(RADIO_URL, {
+    audioElement,
+    metadataTypes: [],
+    onLoad,
+    onPlay,
+    onStop,
+    retryTimeout: 3,
+    onRetry,
+  });
+
+  let animation = createAnalyserAnimation(player, album);
+
+  const mopidy = new Mopidy(RADIO_SOCKET);
+
+  mopidy.on("event:trackPlaybackStarted", ({ tl_track }) => {
+    if (tl_track) {
+      track = tl_track.track;
+      updateDomTrackMeta();
+    }
+  });
+
+  mopidy.on("state:online", async () => {
+    track = await mopidy.playback.getCurrentTrack();
+    updateDomTrackMeta();
+  });
+
   spinner.addEventListener("click", pause);
   playButton.addEventListener("click", play);
   pauseButton.addEventListener("click", pause);
   volume.addEventListener("change", ({ target: { value } }) => {
-    console.log(value);
     audioElement.volume = value;
+    audioElement.muted = false;
   });
+
   window.addEventListener("resize", resize);
   window.addEventListener("blur", () => {
     if (animationLoop) {
@@ -217,13 +130,13 @@ const start = () => {
     if (!animationLoop) requestAnimationFrame(draw);
   });
 
-  audioElement
-    .play()
-    .then(play)
-    .catch(() => {
-      //No autoplay for us
-      onStop();
-    });
+  audioElement.addEventListener("canplay", () => {
+    if (!animation) animation = createAnalyserAnimation(player, album);
+    if (!animationLoop) requestAnimationFrame(draw);
+  });
+
+  play();
+  audioElement.play().catch(pause);
 };
 
 window.addEventListener("load", start);

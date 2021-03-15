@@ -35,15 +35,10 @@ html {
   }
 }
 
-#canvas {
-  z-index: -1;
-}
-
 @media screen and (-webkit-min-device-pixel-ratio:0) {
     input[type='range'] {
       box-shadow: none;
       border-radius: 12px;
-      background-color: #333;
       -webkit-appearance: none;
     }
 
