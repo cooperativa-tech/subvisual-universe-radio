@@ -65,7 +65,9 @@ const start = () => {
     currentTime.textContent = toReadableString(timePosition);
     progressBar.style.transform = `scaleX(${progress})`;
 
-    timePosition = await mopidy.playback.getTimePosition();
+    if (mopidy.playback) {
+      timePosition = await mopidy.playback.getTimePosition();
+    }
   };
 
   const onLoad = () => {
@@ -110,7 +112,7 @@ const start = () => {
     );
 
     currentSong.textContent = `${track.name}`;
-    currentArtist.textContent = `by: ${artists}`;
+    currentArtist.textContent = artists;
     document.title = `${track.name} - Radio Universo`;
 
     const images = await mopidy.library.getImages([track.album.uri]);
@@ -136,7 +138,7 @@ const start = () => {
     }
 
     try {
-      player.play().catch(pause);
+      audioElement.play().finally(player.play).catch(pause);
     } catch (error) {
       console.error(error);
     }
