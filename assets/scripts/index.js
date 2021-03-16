@@ -10,15 +10,65 @@ const start = () => {
   let animationLoop;
   let track = {};
   let artists = "";
+  let timePosition = 0;
+  let totalTrackTime = 0;
+  let updateTimeLoop;
 
+  const mute = document.getElementById("mute");
   const album = document.getElementById("album");
+  const canvas = document.getElementById("canvas");
   const spinner = document.getElementById("loading");
-  const volumne = document.getElementById("loading");
+  const volume = document.getElementById("volume");
   const playButton = document.getElementById("play");
   const pauseButton = document.getElementById("pause");
   const audioElement = document.getElementById("audio");
+  const progressBar = document.getElementById("progress");
+  const volumeOn = document.getElementById("volumeOn");
+  const volumeOff = document.getElementById("volumeOff");
+  const totalTime = document.getElementById("totalTime");
   const currentSong = document.getElementById("currentSong");
+  const currentTime = document.getElementById("currentTime");
   const currentArtist = document.getElementById("currentArtist");
+
+  let player;
+  let animation = createAnalyserAnimation(audioElement, canvas);
+
+  const mopidy = new Mopidy(RADIO_SOCKET);
+
+  mopidy.on("event:trackPlaybackStarted", async ({ tl_track }) => {
+    if (tl_track) {
+      track = tl_track.track;
+      await updateDomTrackMeta();
+    }
+  });
+
+  mopidy.on("state:online", async () => {
+    track = await mopidy.playback.getCurrentTrack();
+    updateDomTrackMeta();
+  });
+
+  const toReadableString = (milis) => {
+    const minutes = Math.floor(milis / 1000 / 60);
+    const seconds = Math.floor((milis / 1000) % 60);
+
+    return `${minutes < 10 ? "0" + minutes : minutes}:${
+      seconds < 10 ? "0" + seconds : seconds
+    }`;
+  };
+
+  const incrementTimer = async () => {
+    totalTrackTime = track.length;
+    timePosition = timePosition + 1000;
+    let progress = timePosition / totalTrackTime;
+
+    totalTime.textContent = toReadableString(totalTrackTime);
+    currentTime.textContent = toReadableString(timePosition);
+    progressBar.style.transform = `scaleX(${progress})`;
+
+    if (mopidy.playback) {
+      timePosition = await mopidy.playback.getTimePosition();
+    }
+  };
 
   const onLoad = () => {
     spinner.classList.remove("hidden");
@@ -27,15 +77,21 @@ const start = () => {
   };
 
   const onPlay = () => {
+    if (audioElement.paused) return onStop();
+
     spinner.classList.add("hidden");
     playButton.classList.add("hidden");
     pauseButton.classList.remove("hidden");
+    pauseButton.focus();
   };
 
   const onStop = () => {
-    spinner.classList.add("hidden");
-    playButton.classList.remove("hidden");
-    pauseButton.classList.add("hidden");
+    player.stop().finally(() => {
+      spinner.classList.add("hidden");
+      playButton.classList.remove("hidden");
+      pauseButton.classList.add("hidden");
+      playButton.focus();
+    });
   };
 
   const onRetry = () => {
@@ -45,6 +101,8 @@ const start = () => {
   const resize = () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+
+    if (animation) requestAnimationFrame(animation.resize);
   };
 
   const updateDomTrackMeta = async () => {
@@ -54,26 +112,33 @@ const start = () => {
     );
 
     currentSong.textContent = `${track.name}`;
-    currentArtist.textContent = `by: ${artists}`;
+    currentArtist.textContent = artists;
     document.title = `${track.name} - Radio Universo`;
 
     const images = await mopidy.library.getImages([track.album.uri]);
-    album.src = images[track.album.uri][0].uri;
-  };
+    const [{ uri }] = images[track.album.uri];
 
-  const pause = () => {
-    if (player && player.stop) player.stop();
-    else onStop();
+    album.src = uri;
+    canvas.style.filter = "blur(12px)";
+    canvas.style.backgroundImage = `url(${uri})`;
+    audioElement.poster = uri;
   };
 
   const play = () => {
-    if (!player || !player.state) {
-      player = createMediaPlayer(audioElement, onLoad, onPlay, onStop, onRetry);
+    if (!player) {
+      player = new IcecastMetadataPlayer(RADIO_URL, {
+        audioElement,
+        metadataTypes: [],
+        onLoad,
+        onPlay,
+        onStop,
+        retryTimeout: 3,
+        onRetry,
+      });
     }
 
     try {
-      audioElement.play();
-      player.play();
+      audioElement.play().finally(player.play).catch(pause);
     } catch (error) {
       console.error(error);
     }
@@ -85,47 +150,36 @@ const start = () => {
     if (animation) animation.draw();
   };
 
-  let player = new IcecastMetadataPlayer(RADIO_URL, {
-    audioElement,
-    metadataTypes: [],
-    onLoad,
-    onPlay,
-    onStop,
-    retryTimeout: 3,
-    onRetry,
-  });
-
-  let animation = createAnalyserAnimation(player, album);
-
-  const mopidy = new Mopidy(RADIO_SOCKET);
-
-  mopidy.on("event:trackPlaybackStarted", ({ tl_track }) => {
-    if (tl_track) {
-      track = tl_track.track;
-      updateDomTrackMeta();
-    }
-  });
-
-  mopidy.on("state:online", async () => {
-    track = await mopidy.playback.getCurrentTrack();
-    updateDomTrackMeta();
-  });
-
-  spinner.addEventListener("click", pause);
+  spinner.addEventListener("click", onStop);
   playButton.addEventListener("click", play);
-  pauseButton.addEventListener("click", pause);
+  pauseButton.addEventListener("click", onStop);
+  window.addEventListener("resize", resize);
+
   volume.addEventListener("change", ({ target: { value } }) => {
     audioElement.volume = value;
     audioElement.muted = false;
   });
 
-  window.addEventListener("resize", resize);
+  mute.addEventListener("click", () => {
+    const muted = !audioElement.muted;
+    audioElement.muted = muted;
+
+    if (muted) {
+      volumeOn.classList.add("hidden");
+      volumeOff.classList.remove("hidden");
+    } else {
+      volumeOn.classList.remove("hidden");
+      volumeOff.classList.add("hidden");
+    }
+  });
+
   window.addEventListener("blur", () => {
     if (animationLoop) {
       cancelAnimationFrame(animationLoop);
       animationLoop = null;
     }
   });
+
   window.addEventListener("focus", () => {
     if (!animationLoop) requestAnimationFrame(draw);
   });
@@ -135,8 +189,14 @@ const start = () => {
     if (!animationLoop) requestAnimationFrame(draw);
   });
 
-  play();
-  audioElement.play().catch(pause);
+  requestAnimationFrame(draw);
+  updateTimeLoop = setInterval(incrementTimer, 1000);
+  try {
+    audioElement.play().finally(play).catch(pause);
+  } catch (error) {
+    pause();
+    console.error(error);
+  }
 };
 
 window.addEventListener("load", start);
