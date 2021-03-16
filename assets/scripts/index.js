@@ -38,18 +38,12 @@ const start = () => {
   mopidy.on("event:trackPlaybackStarted", async ({ tl_track }) => {
     if (tl_track) {
       track = tl_track.track;
-      updateDomTrackMeta();
-      timePosition = await mopidy.playback.getTimePosition();
-      if (updateTimeLoop) {
-        cancelInterval(updateTimeLoop);
-        setInterval(incrementTimer, 1000);
-      }
+      await updateDomTrackMeta();
     }
   });
 
   mopidy.on("state:online", async () => {
     track = await mopidy.playback.getCurrentTrack();
-    timePosition = await mopidy.playback.getTimePosition();
     updateDomTrackMeta();
   });
 
@@ -65,11 +59,13 @@ const start = () => {
   const incrementTimer = async () => {
     totalTrackTime = track.length;
     timePosition = timePosition + 1000;
-    const progress = timePosition / totalTrackTime;
+    let progress = timePosition / totalTrackTime;
 
     totalTime.textContent = toReadableString(totalTrackTime);
     currentTime.textContent = toReadableString(timePosition);
     progressBar.style.transform = `scaleX(${progress})`;
+
+    timePosition = await mopidy.playback.getTimePosition();
   };
 
   const onLoad = () => {
