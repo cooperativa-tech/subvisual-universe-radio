@@ -1,12 +1,3 @@
-const createCanvas = () => {
-  const canvas = document.getElementById("canvas");
-
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  return canvas;
-};
-
 const createAnalyser = () => {
   let audioCtx = window.AudioContext
     ? new AudioContext()
@@ -18,48 +9,39 @@ const createAnalyser = () => {
   return { analyser, audioCtx };
 };
 
-const createAnalyserAnimation = (player, album) => {
-  const canvas = createCanvas();
+const createAnalyserAnimation = (audioElement, canvas) => {
   const canvasCtx = canvas.getContext("2d");
   const { analyser, audioCtx } = createAnalyser();
 
   const length = analyser.frequencyBinCount;
   let freqArray = new Uint8Array(length);
-  const source = audioCtx.createMediaElementSource(player.audioElement);
+  const source = audioCtx.createMediaElementSource(audioElement);
 
   source.connect(analyser);
   source.connect(audioCtx.destination);
 
-  const gradient = canvasCtx.createLinearGradient(0, 0, 0, canvas.height);
+  let gradient = canvasCtx.createLinearGradient(0, 0, 0, canvas.height);
   gradient.addColorStop(0, "rgba(0,0,0,0)");
-  gradient.addColorStop(0.5, "rgba(0,0,0,0.4)");
+  gradient.addColorStop(0.6, "rgba(0,0,0,0.9)");
   gradient.addColorStop(1, "rgba(0,0,0,1)");
+
+  const resize = () => {
+    gradient = canvasCtx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, "rgba(0,0,0,0.4)");
+    gradient.addColorStop(0.6, "rgba(0,0,0,0.9)");
+    gradient.addColorStop(1, "rgba(0,0,0,1)");
+    draw();
+  };
 
   const tick = () => {
     analyser.getByteFrequencyData(freqArray);
   };
 
   const draw = () => {
-    const albumSize = Math.max(canvas.width, canvas.height);
-
     canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-
-    if (album.src.length) {
-      canvasCtx.globalAlpha = 0.2;
-      canvasCtx.drawImage(
-        album,
-        canvas.width / 2 - albumSize / 2,
-        canvas.height / 2 - albumSize / 2,
-        albumSize,
-        albumSize,
-      );
-      canvasCtx.globalAlpha = 1;
-    }
 
     canvasCtx.fillStyle = gradient;
     canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-
-    canvasCtx.fillStyle = "rgba(255, 255, 255, 1)";
 
     let barX = 0;
     let barWidth = (canvas.width * window.devicePixelRatio) / length;
@@ -84,7 +66,7 @@ const createAnalyserAnimation = (player, album) => {
     }
   };
 
-  return { draw, tick, source, audioCtx };
+  return { draw, tick, resize, source, audioCtx };
 };
 
 export default createAnalyserAnimation;

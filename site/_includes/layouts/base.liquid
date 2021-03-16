@@ -20,16 +20,16 @@
     <meta name="keywords" content="{{ metadata.keywords }}" />
   </head>
 
-  <body class="min-h-screen bg-black max-w-5xl mx-auto px-6 py-16">
-    <nav class="relative z-20 flex justify-between mb-20 text-2xl">
-      <a class="flex items-end"href="/">
+  <body class="flex flex-col min-h-screen bg-black max-w-5xl mx-auto px-6 py-16">
+    <nav class="relative z-20 flex items-center justify-between mb-20 text-2xl">
+      <a class="flex items-center" href="/">
         <div class="w-9 h-9 mr-4">{% include icons/radio.svg %}</div>
         Radio Universo
       </a>
       <a class="underline" href="/all">All transmissions</a>
     </nav>
 
-    <main>
+    <main class="flex flex-col flex-1">
       {{ content | safe }}
     </main>
   </body>
