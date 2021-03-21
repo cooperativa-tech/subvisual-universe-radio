@@ -9,7 +9,7 @@ const RADIO_SOCKET = "wss://radiouniverso.live/ws/";
 const start = () => {
   let animationLoop;
   let track = {};
-  let listeners = 0;
+  let listeners, listenerPeak;
   let artists = "";
   let timePosition = 0;
   let totalTrackTime = 0;
@@ -30,6 +30,7 @@ const start = () => {
   const currentSong = document.getElementById("currentSong");
   const currentTime = document.getElementById("currentTime");
   const currentArtist = document.getElementById("currentArtist");
+  const currentListeners = document.getElementById("currentListeners");
 
   spinner.classList.add("hidden");
   playButton.classList.remove("hidden");
@@ -38,10 +39,11 @@ const start = () => {
   let animation;
 
   const socket = io("ws.radiouniverso.live");
-  socket.on("data", ({ current, ended, listeners }) => {
-    track = current;
-    listeners = listeners;
-    timePosition = current.timePosition;
+  socket.on("data", (data) => {
+    track = data.current;
+    listeners = data.listeners;
+    listenerPeak = data.listenerPeak;
+    timePosition = data.current.timePosition;
 
     clearInterval(updateTimeLoop);
     updateTimeLoop = setInterval(incrementTimer, 1000);
@@ -111,6 +113,7 @@ const start = () => {
     currentSong.textContent = `${track.name}`;
     currentArtist.textContent = artists;
     document.title = `${track.name} - Radio Universo`;
+    currentListeners.textContent = `listeners ${listeners}, peak ${listenerPeak}`;
 
     const { uri } = track.image;
 
