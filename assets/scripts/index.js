@@ -9,6 +9,7 @@ const RADIO_SOCKET = "wss://radiouniverso.live/ws/";
 const start = () => {
   let animationLoop;
   let track = {};
+  let listeners = 0;
   let artists = "";
   let timePosition = 0;
   let totalTrackTime = 0;
@@ -30,13 +31,16 @@ const start = () => {
   const currentTime = document.getElementById("currentTime");
   const currentArtist = document.getElementById("currentArtist");
 
+  spinner.classList.add("hidden");
+  playButton.classList.remove("hidden");
+
   let player;
-  let animation = createAnalyserAnimation(audioElement, canvas);
+  let animation;
 
   const socket = io("ws.radiouniverso.live");
   socket.on("data", ({ current, ended, listeners }) => {
-    console.log(current, ended, listeners);
     track = current;
+    listeners = listeners;
     timePosition = current.timePosition;
 
     clearInterval(updateTimeLoop);
@@ -70,21 +74,20 @@ const start = () => {
     pauseButton.classList.add("hidden");
   };
 
-  const onPlay = () => {
+  const onPlay = async () => {
     if (audioElement.paused) return onStop();
-
+    if (!animation) animation = createAnalyserAnimation(audioElement, canvas);
     spinner.classList.add("hidden");
     playButton.classList.add("hidden");
     pauseButton.classList.remove("hidden");
-    pauseButton.focus();
   };
 
   const onStop = () => {
     player.stop().finally(() => {
+      audioElement.pause();
       spinner.classList.add("hidden");
       playButton.classList.remove("hidden");
       pauseButton.classList.add("hidden");
-      playButton.focus();
     });
   };
 
@@ -131,7 +134,7 @@ const start = () => {
     }
 
     try {
-      audioElement.play().finally(player.play).catch(pause);
+      player.play();
     } catch (error) {
       console.error(error);
     }
@@ -144,7 +147,7 @@ const start = () => {
   };
 
   spinner.addEventListener("click", onStop);
-  playButton.addEventListener("click", play);
+  playButton.addEventListener("click", () => play());
   pauseButton.addEventListener("click", onStop);
   window.addEventListener("resize", resize);
 
@@ -178,17 +181,17 @@ const start = () => {
   });
 
   audioElement.addEventListener("canplay", () => {
-    if (!animation) animation = createAnalyserAnimation(player, album);
     if (!animationLoop) requestAnimationFrame(draw);
   });
 
   requestAnimationFrame(draw);
   updateTimeLoop = setInterval(incrementTimer, 1000);
+
   try {
-    audioElement.play().finally(play).catch(pause);
+    play();
   } catch (error) {
-    pause();
     console.error(error);
+    onLoad();
   }
 };
 
