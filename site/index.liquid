@@ -2,12 +2,12 @@
 layout: layouts/base.liquid
 ---
 
-<section class="relative z-20 flex flex-col flex-1 justify-end h-full">
+<section class="relative z-20 flex flex-col flex-1 items-center justify-end h-full">
   <div class="flex flex-1 items-center justify-center">
-    <img id="album" class="shadow-2xl max-h-96 sm:max-h-56 sm:w-auto"></img>
+    <img id="album" width="640px" height="640px" class="shadow-2xl w-auto max-h-96 sm:max-h-full sm:w-auto"></img>
   </div>
 
-  <div class="flex justify-around items-center mb-12 sm:flex-col">
+  <div class="mt-6 max-w-2xl sm:max-w-full w-full flex justify-between items-center sm:flex-col">
     <button id="pause" class="w-16 h-16 hidden rounded-full shadow-2xl focus:ring-4 focus:ring-blue-500 focus:outline-none">
       {% include icons/pause.svg %}
     </button>
@@ -20,19 +20,12 @@ layout: layouts/base.liquid
       </div>
     </button>
 
-    <div class="flex flex-1 flex-col justify-center items-center max-w-xl sm:max-w-full sm:w-full sm:mt-8">
-      <h1 class="text-3xl text-center mb-1" id="currentSong">&nbsp;</h2>
-      <p class="text-xl text-center" id="currentArtist">&nbsp;</p>
-      <div class="mt-8 flex flex-1 w-full justify-center items-center">
-        <p id="currentTime" class="w-12"></p>
-        <div class="flex-1 ml-4 mr-4">
-          <div id="progress" class="rounded-full transition duration-700 ease-linear origin-left w-full h-2 bg-white bg-opacity-30"></div>
-        </div>
-        <p id="totalTime" class="w-12"></p>
-      </div>
+    <div class="max-w-full flex flex-1 flex-col justify-center items-center sm:w-full sm:mt-8">
+      <h1 class="max-w-md truncate text-3xl text-center mb-1" id="currentSong">&nbsp;</h1>
+      <p class="max-w-md truncate text-xl text-center" id="currentArtist">&nbsp;</p>
     </div>
 
-    <div class="group relative flex items-center p-4 sm:hidden">
+    <div class="group relative flex items-center sm:hidden">
       <button id="mute" class="flex justify-center items-center w-16 h-16 rounded-full shadow-2xl bg-white text-black focus:ring-4 focus:ring-blue-500 focus:outline-none cursor-pointer">
         <div class="w-9 h-9">
           <label id="volumeOn" for="volume" class="cursor-pointer">{% include icons/volume-on.svg %}</label>
@@ -47,9 +40,16 @@ layout: layouts/base.liquid
         max="1"
         step="0.01"
         value="1"
-        class="cursor-pointer ring-1 ring-white bg-opacity-10 bg-white transition duration-300 ease-in-out absolute transform -translate-x-2/4 translate-y-6 bottom-1 left-1/2 opacity-0 group-hover:opacity-100 focus:opacity-100 shadow-2xl"
+        class="cursor-pointer ring-1 ring-white bg-opacity-10 bg-white transition duration-300 ease-in-out absolute transform -translate-x-2/4 -translate-y-12 top-1 left-1/2 opacity-0 group-hover:opacity-100 focus:opacity-100 shadow-2xl"
       />
     </div>
+  </div>
+  <div class="max-w-2xl sm:max-w-full mt-6 flex w-full justify-center items-center">
+    <p id="currentTime" class="w-16 text-center"></p>
+    <div class="flex-1 ml-4 mr-4">
+      <div id="progress" class="rounded-full transform transform scale-x-0 transition duration-700 ease-linear origin-left w-full h-2 bg-white bg-opacity-30 "></div>
+    </div>
+    <p id="totalTime" class="w-16 text-center"></p>
   </div>
 </section>
 
@@ -60,7 +60,7 @@ layout: layouts/base.liquid
   autoplay="true"
 >
   <source
-    src="https://stream.radiouniverso.live"
+    src="https://stream.radiouniverso.live/"
     type="audio/webm"
   />
 </audio>

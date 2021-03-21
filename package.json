@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "icecast-metadata-player": "1.1.1",
-    "mopidy-es6": "^0.0.5"
+    "mopidy-es6": "^0.0.5",
+    "socket.io-client": "^4.0.0"
   },
   "devDependencies": {
     "@11ty/eleventy": "^0.11.0",

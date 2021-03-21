@@ -1,9 +1,9 @@
-import Mopidy from "mopidy-es6";
 import IcecastMetadataPlayer from "icecast-metadata-player";
+import { io } from "socket.io-client";
 
 import createAnalyserAnimation from "./animation.js";
 
-const RADIO_URL = "https://stream.radiouniverso.live/";
+const RADIO_URL = "https://stream.radiouniverso.live/radiouniverso";
 const RADIO_SOCKET = "wss://radiouniverso.live/ws/";
 
 const start = () => {
@@ -33,17 +33,14 @@ const start = () => {
   let player;
   let animation = createAnalyserAnimation(audioElement, canvas);
 
-  const mopidy = new Mopidy(RADIO_SOCKET);
+  const socket = io("ws.radiouniverso.live");
+  socket.on("data", ({ current, ended, listeners }) => {
+    console.log(current, ended, listeners);
+    track = current;
+    timePosition = current.timePosition;
 
-  mopidy.on("event:trackPlaybackStarted", async ({ tl_track }) => {
-    if (tl_track) {
-      track = tl_track.track;
-      await updateDomTrackMeta();
-    }
-  });
-
-  mopidy.on("state:online", async () => {
-    track = await mopidy.playback.getCurrentTrack();
+    clearInterval(updateTimeLoop);
+    updateTimeLoop = setInterval(incrementTimer, 1000);
     updateDomTrackMeta();
   });
 
@@ -57,17 +54,14 @@ const start = () => {
   };
 
   const incrementTimer = async () => {
-    totalTrackTime = track.length;
+    totalTrackTime = track.length || 0;
     timePosition = timePosition + 1000;
     let progress = timePosition / totalTrackTime;
+    progress = progress === Infinity ? 0 : progress;
 
     totalTime.textContent = toReadableString(totalTrackTime);
     currentTime.textContent = toReadableString(timePosition);
     progressBar.style.transform = `scaleX(${progress})`;
-
-    if (mopidy.playback) {
-      timePosition = await mopidy.playback.getTimePosition();
-    }
   };
 
   const onLoad = () => {
@@ -115,8 +109,7 @@ const start = () => {
     currentArtist.textContent = artists;
     document.title = `${track.name} - Radio Universo`;
 
-    const images = await mopidy.library.getImages([track.album.uri]);
-    const [{ uri }] = images[track.album.uri];
+    const { uri } = track.image;
 
     album.src = uri;
     canvas.style.filter = "blur(12px)";
