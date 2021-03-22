@@ -4,11 +4,11 @@ on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     strategy:
       matrix:
-        node-version: [12.x]
+        node-version: [15.x]
 
     steps:
       - uses: actions/checkout@v1
@@ -20,10 +20,10 @@ jobs:
       - name: Cache node modules
         uses: actions/cache@v2
         with:
-            path: node_modules
-            key: ${{ runner.os }}-build-node_modules-${{ hashFiles('**/yarn.lock') }}
-            restore-keys: |
-              ${{ runner.os }}-node-
+          path: node_modules
+          key: ${{ runner.os }}-build-node_modules-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: yarn install, lint and build
         run: |
