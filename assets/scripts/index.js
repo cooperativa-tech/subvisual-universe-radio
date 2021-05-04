@@ -1,14 +1,15 @@
-import Mopidy from "mopidy-es6";
 import IcecastMetadataPlayer from "icecast-metadata-player";
+import { io } from "socket.io-client";
 
 import createAnalyserAnimation from "./animation.js";
 
-const RADIO_URL = "https://stream.radiouniverso.live/";
+const RADIO_URL = "https://stream.radiouniverso.live/radiouniverso";
 const RADIO_SOCKET = "wss://radiouniverso.live/ws/";
 
 const start = () => {
   let animationLoop;
   let track = {};
+  let listeners, listenerPeak;
   let artists = "";
   let timePosition = 0;
   let totalTrackTime = 0;
@@ -29,21 +30,23 @@ const start = () => {
   const currentSong = document.getElementById("currentSong");
   const currentTime = document.getElementById("currentTime");
   const currentArtist = document.getElementById("currentArtist");
+  const currentListeners = document.getElementById("currentListeners");
+
+  spinner.classList.add("hidden");
+  playButton.classList.remove("hidden");
 
   let player;
-  let animation = createAnalyserAnimation(audioElement, canvas);
+  let animation;
 
-  const mopidy = new Mopidy(RADIO_SOCKET);
+  const socket = io("ws.radiouniverso.live");
+  socket.on("data", (data) => {
+    track = data.current;
+    listeners = data.listeners;
+    listenerPeak = data.listenerPeak;
+    timePosition = data.current.timePosition;
 
-  mopidy.on("event:trackPlaybackStarted", async ({ tl_track }) => {
-    if (tl_track) {
-      track = tl_track.track;
-      await updateDomTrackMeta();
-    }
-  });
-
-  mopidy.on("state:online", async () => {
-    track = await mopidy.playback.getCurrentTrack();
+    clearInterval(updateTimeLoop);
+    updateTimeLoop = setInterval(incrementTimer, 1000);
     updateDomTrackMeta();
   });
 
@@ -57,17 +60,14 @@ const start = () => {
   };
 
   const incrementTimer = async () => {
-    totalTrackTime = track.length;
+    totalTrackTime = track.length || 0;
     timePosition = timePosition + 1000;
     let progress = timePosition / totalTrackTime;
+    progress = progress === Infinity ? 0 : progress;
 
     totalTime.textContent = toReadableString(totalTrackTime);
     currentTime.textContent = toReadableString(timePosition);
     progressBar.style.transform = `scaleX(${progress})`;
-
-    if (mopidy.playback) {
-      timePosition = await mopidy.playback.getTimePosition();
-    }
   };
 
   const onLoad = () => {
@@ -76,21 +76,20 @@ const start = () => {
     pauseButton.classList.add("hidden");
   };
 
-  const onPlay = () => {
+  const onPlay = async () => {
     if (audioElement.paused) return onStop();
-
+    if (!animation) animation = createAnalyserAnimation(audioElement, canvas);
     spinner.classList.add("hidden");
     playButton.classList.add("hidden");
     pauseButton.classList.remove("hidden");
-    pauseButton.focus();
   };
 
   const onStop = () => {
     player.stop().finally(() => {
+      audioElement.pause();
       spinner.classList.add("hidden");
       playButton.classList.remove("hidden");
       pauseButton.classList.add("hidden");
-      playButton.focus();
     });
   };
 
@@ -114,9 +113,9 @@ const start = () => {
     currentSong.textContent = `${track.name}`;
     currentArtist.textContent = artists;
     document.title = `${track.name} - Radio Universo`;
+    currentListeners.textContent = `listeners ${listeners}, peak ${listenerPeak}`;
 
-    const images = await mopidy.library.getImages([track.album.uri]);
-    const [{ uri }] = images[track.album.uri];
+    const { uri } = track.image;
 
     album.src = uri;
     canvas.style.filter = "blur(12px)";
@@ -138,7 +137,7 @@ const start = () => {
     }
 
     try {
-      audioElement.play().finally(player.play).catch(pause);
+      player.play();
     } catch (error) {
       console.error(error);
     }
@@ -151,7 +150,7 @@ const start = () => {
   };
 
   spinner.addEventListener("click", onStop);
-  playButton.addEventListener("click", play);
+  playButton.addEventListener("click", () => play());
   pauseButton.addEventListener("click", onStop);
   window.addEventListener("resize", resize);
 
@@ -185,17 +184,17 @@ const start = () => {
   });
 
   audioElement.addEventListener("canplay", () => {
-    if (!animation) animation = createAnalyserAnimation(player, album);
     if (!animationLoop) requestAnimationFrame(draw);
   });
 
   requestAnimationFrame(draw);
   updateTimeLoop = setInterval(incrementTimer, 1000);
+
   try {
-    audioElement.play().finally(play).catch(pause);
+    play();
   } catch (error) {
-    pause();
     console.error(error);
+    onLoad();
   }
 };
 
